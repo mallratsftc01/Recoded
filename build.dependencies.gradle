@@ -1,0 +1,36 @@
+repositories {
+    mavenCentral()
+    google() // Needed for androidx
+    maven {
+        name = 'dashboard'
+        url = 'https://maven.brott.dev/'
+    }
+    maven {
+        name = 'epralib'
+        url = uri("https://maven.pkg.github.com/mallratsftc01/EPRALib")
+        credentials {
+            username = project.findProperty("gpr.user") ?: ("mallratsftc01")
+            password = project.findProperty("gpr.key") ?: ("key")
+        }
+    }
+}
+
+
+dependencies {
+    implementation 'org.firstinspires.ftc:Inspection:11.0.0'
+    implementation 'org.firstinspires.ftc:Blocks:11.0.0'
+    implementation 'org.firstinspires.ftc:RobotCore:11.0.0'
+    implementation 'org.firstinspires.ftc:RobotServer:11.0.0'
+    implementation 'org.firstinspires.ftc:OnBotJava:11.0.0'
+    implementation 'org.firstinspires.ftc:Hardware:11.0.0'
+    implementation 'org.firstinspires.ftc:FtcCommon:11.0.0'
+    implementation 'org.firstinspires.ftc:Vision:11.0.0'
+    implementation 'androidx.appcompat:appcompat:1.2.0'
+    implementation('com.acmerobotics.dashboard:dashboard:0.4.16') {
+        exclude group: 'org.firstinspires.ftc'
+    }
+    implementation ('com.epra.epralib:ftclib:1.3.0') {
+        exclude group: 'org.firstinspires.ftc'
+    }
+}
+
