@@ -28,6 +28,7 @@ public class Recoded extends LinearOpMode {
     private IMUExpanded imu;
 
     private Controller controller1;
+    private Controller controller2;
 
     @Override
     public void runOpMode() throws InterruptedException {
@@ -46,7 +47,9 @@ public class Recoded extends LinearOpMode {
             //Setting up the MotorControllers that are not part of the DriveTrain
             nonDriveMotors = new HashMap<>();
             //Add MotorControllers like so:
-            //nonDriveMotors.put(new MotorController(new DcMotorExFrame(hardwareMap.get(DcMotorEx.class, MOTOR_NAME)), ID), ID);
+            //nonDriveMotors.put(ID, new MotorController(new DcMotorExFrame(hardwareMap.get(DcMotorEx.class, MOTOR_NAME)), ID));
+            nonDriveMotors.put("Shooter", new MotorController(new DcMotorExFrame(hardwareMap.get(DcMotorEx.class, "Shooter")), "Shooter"));
+            nonDriveMotors.put("Intake", new MotorController(new DcMotorExFrame(hardwareMap.get(DcMotorEx.class, "Intake")), "Intake"));
 
             RevHubOrientationOnRobot.LogoFacingDirection logoDirection = RevHubOrientationOnRobot.LogoFacingDirection.UP;
             RevHubOrientationOnRobot.UsbFacingDirection  usbDirection  = RevHubOrientationOnRobot.UsbFacingDirection.BACKWARD;
@@ -59,6 +62,7 @@ public class Recoded extends LinearOpMode {
 
             //Setting up the controller
             controller1 = new Controller(gamepad1, 0.05f, "1");
+            controller2 = new Controller(gamepad2, 0.05f, "2");
 
         } catch (IOException e) {
             throw new RuntimeException(e);
@@ -84,6 +88,8 @@ public class Recoded extends LinearOpMode {
             //Uses the joysticks to drive the robot with fieldOrientedMecanumDrive
             drive.fieldOrientedMecanumDrive(controller1.analogDeadband(Controller.Key.RIGHT_STICK_X), controller1.analogDeadband(Controller.Stick.LEFT_STICK), imu.getYaw());
 
+            nonDriveMotors.get("Shooter").setPower(controller2.analogDeadband(Controller.Key.LEFT_STICK_Y));
+            nonDriveMotors.get("Intake"). setPower(controller2.analogDeadband(Controller.Key.RIGHT_STICK_Y));
         }
 
         //Closes all logs
