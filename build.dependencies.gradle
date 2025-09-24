@@ -29,7 +29,7 @@ dependencies {
     implementation('com.acmerobotics.dashboard:dashboard:0.4.16') {
         exclude group: 'org.firstinspires.ftc'
     }
-    implementation ('com.epra.epralib:ftclib:1.3.0') {
+    implementation ('com.epra.epralib:ftclib:1.3.2') {
         exclude group: 'org.firstinspires.ftc'
     }
 }
