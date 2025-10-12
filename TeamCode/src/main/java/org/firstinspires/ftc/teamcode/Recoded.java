@@ -5,9 +5,10 @@ import com.epra.epralib.ftclib.location.IMUExpanded;
 import com.epra.epralib.ftclib.location.Odometry;
 import com.epra.epralib.ftclib.location.Pose;
 import com.epra.epralib.ftclib.math.geometry.Angle;
-import com.epra.epralib.ftclib.math.geometry.Point;
+import com.epra.epralib.ftclib.math.geometry.Vector;
 import com.epra.epralib.ftclib.movement.DcMotorExFrame;
 import com.epra.epralib.ftclib.movement.DriveTrain;
+import com.epra.epralib.ftclib.movement.Motor;
 import com.epra.epralib.ftclib.movement.MotorController;
 import com.epra.epralib.ftclib.movement.PIDController;
 import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
@@ -22,7 +23,7 @@ import java.util.HashMap;
 @TeleOp
 public class Recoded extends LinearOpMode {
 
-    private final Pose START_POSE = new Pose(new Point(0, 0), new Angle(0.0));
+    private final Pose START_POSE = new Pose(new Vector(0, 0), new Angle());
 
     private MotorController frontLeft;
     private MotorController frontRight;
@@ -42,11 +43,30 @@ public class Recoded extends LinearOpMode {
     public void runOpMode() throws InterruptedException {
 
         try {
+            //Setting up the IMU
+            RevHubOrientationOnRobot.LogoFacingDirection logoDirection = RevHubOrientationOnRobot.LogoFacingDirection.UP;
+            RevHubOrientationOnRobot.UsbFacingDirection  usbDirection  = RevHubOrientationOnRobot.UsbFacingDirection.BACKWARD;
+            RevHubOrientationOnRobot orientationOnRobot = new RevHubOrientationOnRobot(logoDirection, usbDirection);
+
+            IMU tempIMU = hardwareMap.get(IMU.class, "imu 1");
+            tempIMU.initialize(new IMU.Parameters(orientationOnRobot));
+            imu = new IMUExpanded(tempIMU);
+
             //Setting up the MotorControllers for the DriveTrain
             frontRight = new MotorController(new DcMotorExFrame(hardwareMap.get(DcMotorEx.class, "northeastMotor")), "front_right");
             frontLeft = new MotorController(new DcMotorExFrame(hardwareMap.get(DcMotorEx.class, "northwestMotor")), "front_left");
             backRight = new MotorController(new DcMotorExFrame(hardwareMap.get(DcMotorEx.class, "southeastMotor")), "back_right");
             backLeft = new MotorController(new DcMotorExFrame(hardwareMap.get(DcMotorEx.class, "southwestMotor")), "back_left");
+
+            //Setting up the Odometry
+            odometry = new Odometry(frontLeft::getCurrentPosition, backLeft::getCurrentPosition, frontRight::getCurrentPosition,
+                    new Vector(7.92784216, 3.75),
+                    new Vector(-8, 3.75),
+                    new Vector(0, 2.0),
+                    imu::getYaw,
+                    START_POSE
+            );
+
             //Initializing the DriveTrain
             drive = new DriveTrain(new MotorController[] {frontLeft, frontRight, backLeft, backRight},
                     new DriveTrain.Orientation[] {DriveTrain.Orientation.LEFT_FRONT, DriveTrain.Orientation.RIGHT_FRONT, DriveTrain.Orientation.LEFT_BACK, DriveTrain.Orientation.RIGHT_BACK},
@@ -57,36 +77,19 @@ public class Recoded extends LinearOpMode {
             //Setting up the MotorControllers that are not part of the DriveTrain
             nonDriveMotors = new HashMap<>();
             //Add MotorControllers like so:
-            //nonDriveMotors.put(ID, new MotorController(new DcMotorExFrame(hardwareMap.get(DcMotorEx.class, MOTOR_NAME)), ID));
+            //nonDriveMotors.put("ID", new MotorController(new DcMotorExFrame(hardwareMap.get(DcMotorEx.class, "MOTOR_NAME")), "ID"));
             nonDriveMotors.put("Shooter", new MotorController(new DcMotorExFrame(hardwareMap.get(DcMotorEx.class, "Shooter")), "Shooter"));
+            nonDriveMotors.get("Shooter").setDirection(Motor.Direction.REVERSE);
             nonDriveMotors.put("Intake", new MotorController(new DcMotorExFrame(hardwareMap.get(DcMotorEx.class, "Intake")), "Intake"));
-
-            RevHubOrientationOnRobot.LogoFacingDirection logoDirection = RevHubOrientationOnRobot.LogoFacingDirection.UP;
-            RevHubOrientationOnRobot.UsbFacingDirection  usbDirection  = RevHubOrientationOnRobot.UsbFacingDirection.BACKWARD;
-            RevHubOrientationOnRobot orientationOnRobot = new RevHubOrientationOnRobot(logoDirection, usbDirection);
-
-            //Setting up the IMU
-            IMU tempIMU = hardwareMap.get(IMU.class, "imu 1");
-            tempIMU.initialize(new IMU.Parameters(orientationOnRobot));
-            imu = new IMUExpanded(tempIMU);
-
-            //Setting up odometry
-            odometry = new Odometry(frontLeft, backLeft, frontRight,
-                    new Point(7.92784216, 3.75),
-                    new Point(-8, 3.75),
-                    new Point(0, 2.0),
-                    imu,
-                    START_POSE
-            );
+            nonDriveMotors.put("Advancer", new MotorController(new DcMotorExFrame(hardwareMap.get(DcMotorEx.class, "Advancer")), "Advancer"));
 
             //Setting up the controller
             controller1 = new Controller(gamepad1, 0.05f, "1");
-            controller2 = new Controller(gamepad2, 0.05f, "2");
+            controller2 = new Controller(gamepad2, 0.05f, "1");
 
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-
         waitForStart();
         while (opModeIsActive()) {
             //Logs data from all MotorControllers, the imu, and odometry
@@ -100,6 +103,7 @@ public class Recoded extends LinearOpMode {
                 }
                 imu.log();
                 controller1.log();
+                controller2.log();
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
@@ -109,9 +113,15 @@ public class Recoded extends LinearOpMode {
             drive.fieldOrientedMecanumDrive(controller1.analogDeadband(Controller.Key.RIGHT_STICK_X), controller1.analogDeadband(Controller.Stick.LEFT_STICK), imu.getYaw());
 
             nonDriveMotors.get("Shooter").setPower(controller2.analogDeadband(Controller.Key.LEFT_STICK_Y));
-            nonDriveMotors.get("Intake"). setPower(controller2.analogDeadband(Controller.Key.RIGHT_STICK_Y));
-        }
+            nonDriveMotors.get("Intake").setPower(controller2.analogDeadband(Controller.Key.RIGHT_STICK_Y));
+            if (controller2.getButton(Controller.Key.A)) {
+                nonDriveMotors.get("Advancer").setPower(1);
+            }
+            else{
+                nonDriveMotors.get("Advancer").setPower(0);
+            }
 
+        }
         //Closes all logs
         try {
             frontRight.closeLog();
@@ -123,6 +133,7 @@ public class Recoded extends LinearOpMode {
             }
             imu.closeLog();
             controller1.closeLog();
+            controller2.closeLog();
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
