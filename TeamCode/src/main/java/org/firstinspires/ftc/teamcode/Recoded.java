@@ -32,6 +32,10 @@ public class Recoded extends LinearOpMode {
     private DriveTrain drive;
 
     private HashMap<String, MotorController> nonDriveMotors;
+    private boolean shooterFlag = true;
+    private boolean shooterLock = false;
+
+    private float shooterLock2;
 
     private IMUExpanded imu;
     private Odometry odometry;
@@ -79,7 +83,6 @@ public class Recoded extends LinearOpMode {
             //Add MotorControllers like so:
             //nonDriveMotors.put("ID", new MotorController(new DcMotorExFrame(hardwareMap.get(DcMotorEx.class, "MOTOR_NAME")), "ID"));
             nonDriveMotors.put("Shooter", new MotorController(new DcMotorExFrame(hardwareMap.get(DcMotorEx.class, "Shooter")), "Shooter"));
-            nonDriveMotors.get("Shooter").setDirection(Motor.Direction.REVERSE);
             nonDriveMotors.put("Intake", new MotorController(new DcMotorExFrame(hardwareMap.get(DcMotorEx.class, "Intake")), "Intake"));
             nonDriveMotors.put("Advancer", new MotorController(new DcMotorExFrame(hardwareMap.get(DcMotorEx.class, "Advancer")), "Advancer"));
 
@@ -112,11 +115,31 @@ public class Recoded extends LinearOpMode {
             //Uses the joysticks to drive the robot with fieldOrientedMecanumDrive
             drive.fieldOrientedMecanumDrive(controller1.analogDeadband(Controller.Key.RIGHT_STICK_X), controller1.analogDeadband(Controller.Stick.LEFT_STICK), imu.getYaw());
 
-            nonDriveMotors.get("Shooter").setPower(controller2.analogDeadband(Controller.Key.LEFT_STICK_Y));
-            nonDriveMotors.get("Intake").setPower(controller2.analogDeadband(Controller.Key.RIGHT_STICK_Y));
-            if (controller2.getButton(Controller.Key.A)) {
-                nonDriveMotors.get("Advancer").setPower(1);
+            if (shooterLock) {
+                nonDriveMotors.get("Shooter").setPower(shooterLock2);
             }
+            else {
+                nonDriveMotors.get("Shooter").setPower(Math.max(0, controller2.analogDeadband(Controller.Key.RIGHT_STICK_Y)));
+            }
+            if (controller2.getButton(Controller.Key.LEFT_TRIGGER) && controller2.getButton(Controller.Key.RIGHT_TRIGGER)) {
+                if (shooterFlag) {
+                    if (shooterLock) {
+                        shooterLock = false;
+                    }
+                    else if (controller2.analogDeadband(Controller.Key.RIGHT_STICK_Y) > 0) {
+                        shooterLock = true;
+                        shooterLock2 = controller2.analogDeadband(Controller.Key.RIGHT_STICK_Y);
+                    }
+                    shooterFlag = false;
+            }
+            else {
+                shooterFlag = true;
+            }
+            nonDriveMotors.get("Intake").setPower(controller2.analogDeadband(Controller.Key.LEFT_STICK_Y));
+            if (controller2.getButton(Controller.Key.UP) && controller2.getButton(Controller.Key.RIGHT_STICK_Y)) {
+                nonDriveMotors.get("Advancer").setPower(-1);
+            }
+        }
             else{
                 nonDriveMotors.get("Advancer").setPower(0);
             }
