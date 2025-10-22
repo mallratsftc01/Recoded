@@ -5,6 +5,8 @@ import com.epra.epralib.ftclib.location.IMUExpanded;
 import com.epra.epralib.ftclib.location.Odometry;
 import com.epra.epralib.ftclib.location.Pose;
 import com.epra.epralib.ftclib.math.geometry.Angle;
+import com.epra.epralib.ftclib.math.geometry.Geometry;
+import com.epra.epralib.ftclib.math.geometry.Matrix;
 import com.epra.epralib.ftclib.math.geometry.Vector;
 import com.epra.epralib.ftclib.movement.DcMotorExFrame;
 import com.epra.epralib.ftclib.movement.DriveTrain;
@@ -32,10 +34,8 @@ public class Recoded extends LinearOpMode {
     private DriveTrain drive;
 
     private HashMap<String, MotorController> nonDriveMotors;
-    private boolean shooterFlag = true;
-    private boolean shooterLock = false;
 
-    private float shooterLock2;
+    private float shooterLockPower;
 
     private IMUExpanded imu;
     private Odometry odometry;
@@ -49,7 +49,7 @@ public class Recoded extends LinearOpMode {
         try {
             //Setting up the IMU
             RevHubOrientationOnRobot.LogoFacingDirection logoDirection = RevHubOrientationOnRobot.LogoFacingDirection.UP;
-            RevHubOrientationOnRobot.UsbFacingDirection  usbDirection  = RevHubOrientationOnRobot.UsbFacingDirection.BACKWARD;
+            RevHubOrientationOnRobot.UsbFacingDirection  usbDirection  = RevHubOrientationOnRobot.UsbFacingDirection.RIGHT;
             RevHubOrientationOnRobot orientationOnRobot = new RevHubOrientationOnRobot(logoDirection, usbDirection);
 
             IMU tempIMU = hardwareMap.get(IMU.class, "imu 1");
@@ -58,12 +58,14 @@ public class Recoded extends LinearOpMode {
 
             //Setting up the MotorControllers for the DriveTrain
             frontRight = new MotorController(new DcMotorExFrame(hardwareMap.get(DcMotorEx.class, "northeastMotor")), "front_right");
+            frontRight.setDirection(Motor.Direction.REVERSE);
             frontLeft = new MotorController(new DcMotorExFrame(hardwareMap.get(DcMotorEx.class, "northwestMotor")), "front_left");
             backRight = new MotorController(new DcMotorExFrame(hardwareMap.get(DcMotorEx.class, "southeastMotor")), "back_right");
+            backRight.setDirection(Motor.Direction.REVERSE);
             backLeft = new MotorController(new DcMotorExFrame(hardwareMap.get(DcMotorEx.class, "southwestMotor")), "back_left");
 
             //Setting up the Odometry
-            odometry = new Odometry(frontLeft::getCurrentPosition, backLeft::getCurrentPosition, frontRight::getCurrentPosition,
+            odometry = new Odometry(frontLeft::getCurrentPosition, frontRight::getCurrentPosition, backLeft::getCurrentPosition,
                     new Vector(7.92784216, 3.75),
                     new Vector(-8, 3.75),
                     new Vector(0, 2.0),
@@ -89,6 +91,7 @@ public class Recoded extends LinearOpMode {
             //Setting up the controller
             controller1 = new Controller(gamepad1, 0.05f, "1");
             controller2 = new Controller(gamepad2, 0.05f, "1");
+            controller2.createChord("shooterLock", new Controller.Key[]{Controller.Key.LEFT_TRIGGER, Controller.Key.RIGHT_TRIGGER});
 
         } catch (IOException e) {
             throw new RuntimeException(e);
@@ -112,37 +115,47 @@ public class Recoded extends LinearOpMode {
             }
             PIDController.update();
 
-            //Uses the joysticks to drive the robot with fieldOrientedMecanumDrive
-            drive.fieldOrientedMecanumDrive(controller1.analogDeadband(Controller.Key.RIGHT_STICK_X), controller1.analogDeadband(Controller.Stick.LEFT_STICK), imu.getYaw());
 
-            if (shooterLock) {
-                nonDriveMotors.get("Shooter").setPower(shooterLock2);
+            //Uses the joysticks to drive the robot with fieldOrientedMecanumDrive
+            drive.mecanumDrive(-1 * controller1.analogDeadband(Controller.Key.RIGHT_STICK_X), controller1.analogDeadband(Controller.Key.LEFT_STICK_X), controller1.analogDeadband(Controller.Key.LEFT_STICK_Y));
+            /*if (controller1.buttonToggleSingle(Controller.Key.Y)) {
+                frontRight.setPower(controller1.getButtonInt(Controller.Key.UP));
+                frontLeft.setPower(controller1.getButtonInt(Controller.Key.LEFT));
+                backRight.setPower(controller1.getButtonInt(Controller.Key.RIGHT));
+                backLeft.setPower(controller1.getButtonInt(Controller.Key.DOWN));
+            } else {
+
+            }*/
+
+            telemetry.addData("Yaw", imu.getYaw().degree());
+            telemetry.addData("NE", frontRight.getPower());
+            telemetry.addData("NW", frontLeft.getPower());
+            telemetry.addData("SE", backRight.getPower());
+            telemetry.addData("SW", backLeft.getPower());
+
+            if (controller2.buttonToggleSingle("shooterLock")) {
+                if (shooterLockPower == 0) {
+                    shooterLockPower = Math.max(0, controller2.analogDeadband(Controller.Key.RIGHT_STICK_Y));
+                }
+                nonDriveMotors.get("Shooter").setPower(shooterLockPower);
             }
             else {
                 nonDriveMotors.get("Shooter").setPower(Math.max(0, controller2.analogDeadband(Controller.Key.RIGHT_STICK_Y)));
-            }
-            if (controller2.getButton(Controller.Key.LEFT_TRIGGER) && controller2.getButton(Controller.Key.RIGHT_TRIGGER)) {
-                if (shooterFlag) {
-                    if (shooterLock) {
-                        shooterLock = false;
-                    }
-                    else if (controller2.analogDeadband(Controller.Key.RIGHT_STICK_Y) > 0) {
-                        shooterLock = true;
-                        shooterLock2 = controller2.analogDeadband(Controller.Key.RIGHT_STICK_Y);
-                    }
-                    shooterFlag = false;
-            }
-            else {
-                shooterFlag = true;
+                shooterLockPower = 0;
             }
             nonDriveMotors.get("Intake").setPower(controller2.analogDeadband(Controller.Key.LEFT_STICK_Y));
-            if (controller2.getButton(Controller.Key.UP) && controller2.getButton(Controller.Key.RIGHT_STICK_Y)) {
+            if (controller2.getButton(Controller.Key.UP) && (controller2.getButton(Controller.Key.RIGHT_STICK_Y) || controller2.buttonToggleSingle("shooterLock"))) {
                 nonDriveMotors.get("Advancer").setPower(-1);
-            }
-        }
-            else{
+            } else{
                 nonDriveMotors.get("Advancer").setPower(0);
             }
+
+            telemetry.addData("Shooter", (controller2.buttonToggleSingle("shooterLock")) ? "Locked" : "Unlocked");
+            try {
+                telemetry.addData("Shooter Velocity", nonDriveMotors.get("shooter").getVelocity());
+            } catch (Exception e) {
+            }
+            telemetry.update();
 
         }
         //Closes all logs
