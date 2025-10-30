@@ -22,8 +22,8 @@ import com.qualcomm.robotcore.hardware.IMU;
 import java.io.IOException;
 import java.util.HashMap;
 
-@TeleOp
-public class Recoded extends LinearOpMode {
+@TeleOp(name = "Shooter Velocity Test", group = "Test")
+public class ShooterVelocityTest extends LinearOpMode {
 
     private final Pose START_POSE = new Pose(new Vector(0, 0), new Angle());
 
@@ -42,6 +42,9 @@ public class Recoded extends LinearOpMode {
 
     private Controller controller1;
     private Controller controller2;
+
+    long shooterStart = 0;
+    long shooterStop = 0;
 
     @Override
     public void runOpMode() throws InterruptedException {
@@ -118,21 +121,14 @@ public class Recoded extends LinearOpMode {
             //Uses the joysticks to drive the robot with fieldOrientedMecanumDrive
             drive.fieldOrientedMecanumDrive(-1 * controller1.analogDeadband(Controller.Key.RIGHT_STICK_X), controller1.analogDeadband(Controller.Stick.LEFT_STICK), imu.getYaw());
 
-            telemetry.addData("Yaw", imu.getYaw().degree());
-            telemetry.addData("NE", frontRight.getPower());
-            telemetry.addData("NW", frontLeft.getPower());
-            telemetry.addData("SE", backRight.getPower());
-            telemetry.addData("SW", backLeft.getPower());
-
-            if (controller2.buttonToggleSingle("shooterLock")) {
-                if (shooterLockPower == 0) {
-                    shooterLockPower = Math.max(0, controller2.analogDeadband(Controller.Key.RIGHT_STICK_Y));
+            if (controller2.buttonToggleSingle(Controller.Key.Y)) {
+                if (shooterStop != 0) {
+                    nonDriveMotors.get("Shooter").setPower(1);
+                    shooterStart = System.currentTimeMillis();
+                    shooterStop = 0;
                 }
-                nonDriveMotors.get("Shooter").setPower(shooterLockPower);
-            }
-            else {
-                nonDriveMotors.get("Shooter").setPower(Math.max(0, controller2.analogDeadband(Controller.Key.RIGHT_STICK_Y)));
-                shooterLockPower = 0;
+            } else {
+                nonDriveMotors.get("Shooter").setPower(0);
             }
             nonDriveMotors.get("Intake").setPower(controller2.analogDeadband(Controller.Key.LEFT_STICK_Y));
             if (controller2.getButton(Controller.Key.UP) && (controller2.getButton(Controller.Key.RIGHT_STICK_Y) || controller2.buttonToggleSingle("shooterLock"))) {
@@ -143,6 +139,13 @@ public class Recoded extends LinearOpMode {
 
             telemetry.addData("Shooter", (controller2.buttonToggleSingle("shooterLock")) ? "Locked" : "Unlocked");
             try {
+                if (shooterStop == 0 && nonDriveMotors.get("Shooter").getVelocity() >= 0.4) {
+                    shooterStop = System.currentTimeMillis();
+                    controller1.flipToggle(Controller.Key.Y);
+                }
+                telemetry.addData("Shooter Warm Up", (shooterStop == 0) ?
+                        (System.currentTimeMillis() - shooterStart) / 1000.0 :
+                        (shooterStop - shooterStart) / 1000.0);
                 telemetry.addData("Shooter Velocity", nonDriveMotors.get("Shooter").getVelocity());
             } catch (Exception e) {
                 telemetry.addData("Error", e.toString());
