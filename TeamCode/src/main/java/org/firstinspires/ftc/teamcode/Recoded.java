@@ -22,7 +22,7 @@ import com.qualcomm.robotcore.hardware.IMU;
 import java.io.IOException;
 import java.util.HashMap;
 
-@TeleOp
+@TeleOp(name = "Recoded")
 public class Recoded extends LinearOpMode {
 
     private final Pose START_POSE = new Pose(new Vector(0, 0), new Angle());
