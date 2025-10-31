@@ -43,8 +43,9 @@ public class ShooterVelocityTest extends LinearOpMode {
     private Controller controller1;
     private Controller controller2;
 
-    long shooterStart = 0;
-    long shooterStop = 0;
+    long shooterStart = -1;
+    long shooterStop = -1;
+    boolean shooterToggle = true;
 
     @Override
     public void runOpMode() throws InterruptedException {
@@ -118,17 +119,16 @@ public class ShooterVelocityTest extends LinearOpMode {
             }
             PIDController.update();
 
-            //Uses the joysticks to drive the robot with fieldOrientedMecanumDrive
-            drive.fieldOrientedMecanumDrive(-1 * controller1.analogDeadband(Controller.Key.RIGHT_STICK_X), controller1.analogDeadband(Controller.Stick.LEFT_STICK), imu.getYaw());
-
             if (controller2.buttonToggleSingle(Controller.Key.Y)) {
-                if (shooterStop != 0) {
-                    nonDriveMotors.get("Shooter").setPower(1);
+                nonDriveMotors.get("Shooter").setPower(1);
+                if (shooterToggle) {
                     shooterStart = System.currentTimeMillis();
                     shooterStop = 0;
+                    shooterToggle = false;
                 }
             } else {
                 nonDriveMotors.get("Shooter").setPower(0);
+                shooterToggle = true;
             }
             nonDriveMotors.get("Intake").setPower(controller2.analogDeadband(Controller.Key.LEFT_STICK_Y));
             if (controller2.getButton(Controller.Key.UP) && (controller2.getButton(Controller.Key.RIGHT_STICK_Y) || controller2.buttonToggleSingle("shooterLock"))) {
@@ -137,11 +137,12 @@ public class ShooterVelocityTest extends LinearOpMode {
                 nonDriveMotors.get("Advancer").setPower(0);
             }
 
-            telemetry.addData("Shooter", (controller2.buttonToggleSingle("shooterLock")) ? "Locked" : "Unlocked");
+            telemetry.addData("Shooter", (controller2.buttonToggleSingle(Controller.Key.Y)) ? "On" : "Off");
+            telemetry.addData("Shooter Start", shooterStart);
+            telemetry.addData("Shooter Stop", shooterStop);
             try {
-                if (shooterStop == 0 && nonDriveMotors.get("Shooter").getVelocity() >= 0.4) {
+                if (shooterStop == 0 && nonDriveMotors.get("Shooter").getVelocity() >= 1) {
                     shooterStop = System.currentTimeMillis();
-                    controller1.flipToggle(Controller.Key.Y);
                 }
                 telemetry.addData("Shooter Warm Up", (shooterStop == 0) ?
                         (System.currentTimeMillis() - shooterStart) / 1000.0 :
