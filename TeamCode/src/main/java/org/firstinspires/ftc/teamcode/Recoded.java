@@ -1,7 +1,7 @@
 package org.firstinspires.ftc.teamcode;
 
 import com.epra.epralib.ftclib.control.Controller;
-import com.epra.epralib.ftclib.location.IMUExpanded;
+import com.epra.epralib.ftclib.location.MultiIMU;
 import com.epra.epralib.ftclib.location.Odometry;
 import com.epra.epralib.ftclib.location.Pose;
 import com.epra.epralib.ftclib.math.geometry.Angle;
@@ -22,7 +22,7 @@ import com.qualcomm.robotcore.hardware.IMU;
 import java.io.IOException;
 import java.util.HashMap;
 
-@TeleOp(name = "Recoded")
+@TeleOp
 public class Recoded extends LinearOpMode {
 
     private final Pose START_POSE = new Pose(new Vector(0, 0), new Angle());
@@ -37,7 +37,7 @@ public class Recoded extends LinearOpMode {
 
     private float shooterLockPower;
 
-    private IMUExpanded imu;
+    private MultiIMU imu;
     private Odometry odometry;
 
     private Controller controller1;
@@ -54,7 +54,7 @@ public class Recoded extends LinearOpMode {
 
             IMU tempIMU = hardwareMap.get(IMU.class, "imu 1");
             tempIMU.initialize(new IMU.Parameters(orientationOnRobot));
-            imu = new IMUExpanded(tempIMU);
+            imu = new MultiIMU(tempIMU);
 
             //Setting up the MotorControllers for the DriveTrain
             frontRight = new MotorController(new DcMotorExFrame(hardwareMap.get(DcMotorEx.class, "northeastMotor")), "front_right");

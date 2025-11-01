@@ -6,7 +6,7 @@ import android.os.Build;
 import android.view.View;
 
 import com.epra.epralib.ftclib.control.Controller;
-import com.epra.epralib.ftclib.location.IMUExpanded;
+import com.epra.epralib.ftclib.location.MultiIMU;
 import com.epra.epralib.ftclib.location.Odometry;
 import com.epra.epralib.ftclib.location.Pose;
 import com.epra.epralib.ftclib.math.geometry.Angle;
