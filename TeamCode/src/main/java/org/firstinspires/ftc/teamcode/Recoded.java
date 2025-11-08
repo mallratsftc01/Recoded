@@ -126,7 +126,7 @@ public class Recoded extends LinearOpMode {
 
             if (controller2.buttonToggleSingle("shooterLock")) {
                 if (shooterLockPower == 0) {
-                    shooterLockPower = Math.max(0, controller2.analogDeadband(Controller.Key.RIGHT_STICK_Y));
+                    shooterLockPower = -1 * Math.min(0, controller2.analogDeadband(Controller.Key.RIGHT_STICK_Y));
                 }
                 nonDriveMotors.get("Shooter").setPower(shooterLockPower);
             }
@@ -134,21 +134,20 @@ public class Recoded extends LinearOpMode {
                 nonDriveMotors.get("Shooter").setPower(-1 * Math.min(0, controller2.analogDeadband(Controller.Key.RIGHT_STICK_Y)));
                 shooterLockPower = 0;
             }
+
             nonDriveMotors.get("Intake").setPower(controller2.analogDeadband(Controller.Key.LEFT_STICK_Y));
-            if (controller2.getButton(Controller.Key.UP) && (controller2.getButton(Controller.Key.RIGHT_STICK_Y) || controller2.buttonToggleSingle("shooterLock"))) {
+
+            if (controller2.getButton(Controller.Key.UP) && (controller2.analogDeadband(Controller.Key.RIGHT_STICK_Y) != 0.0 || controller2.buttonToggleSingle("shooterLock"))) {
                 nonDriveMotors.get("Advancer").setPower(-1);
             } else{
                 nonDriveMotors.get("Advancer").setPower(0);
             }
 
             telemetry.addData("Shooter", (controller2.buttonToggleSingle("shooterLock")) ? "Locked" : "Unlocked");
-            try {
-                telemetry.addData("Shooter Velocity", nonDriveMotors.get("Shooter").getVelocity());
-            } catch (Exception e) {
-                telemetry.addData("Error", e.toString());
-            }
-            telemetry.update();
+            telemetry.addData("Shooter Power", nonDriveMotors.get("Shooter").getPower());
+            telemetry.addData("Shooter RPM", nonDriveMotors.get("Shooter").getRPS() * 60);
 
+            telemetry.update();
         }
         //Closes all logs
         try {
