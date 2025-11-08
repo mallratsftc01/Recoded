@@ -131,7 +131,7 @@ public class Recoded extends LinearOpMode {
                 nonDriveMotors.get("Shooter").setPower(shooterLockPower);
             }
             else {
-                nonDriveMotors.get("Shooter").setPower(Math.max(0, controller2.analogDeadband(Controller.Key.RIGHT_STICK_Y)));
+                nonDriveMotors.get("Shooter").setPower(-1 * Math.min(0, controller2.analogDeadband(Controller.Key.RIGHT_STICK_Y)));
                 shooterLockPower = 0;
             }
             nonDriveMotors.get("Intake").setPower(controller2.analogDeadband(Controller.Key.LEFT_STICK_Y));

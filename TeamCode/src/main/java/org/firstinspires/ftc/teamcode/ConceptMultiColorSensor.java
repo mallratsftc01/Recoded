@@ -36,8 +36,10 @@ public class ConceptMultiColorSensor extends LinearOpMode {
     private Controller controller2;
 
     private HashMap<String, NormalizedColorSensor> colorSensors;
+    final private double AMP = 50;
+    final private double THRESHOLD = 0.5;
     private HashMap<String, Vector> targetColors;
-    protected String color = "";
+    protected String color = "Black";
     private View relativeLayout;
 
     @Override
@@ -48,9 +50,15 @@ public class ConceptMultiColorSensor extends LinearOpMode {
             controller2 = new Controller(gamepad2, 0.05f, "1");
 
             colorSensors = new HashMap<>();
-            targetColors = new HashMap<>();
             colorSensors.put("A", hardwareMap.get(NormalizedColorSensor.class, "A"));
             colorSensors.put("B", hardwareMap.get(NormalizedColorSensor.class, "B"));
+
+            targetColors = new HashMap<>();
+            targetColors.put("Black", new Vector(0, 0, 0));
+            //Purple = #B863E0
+            targetColors.put("Purple", new Vector(0.7215686274509804, 0.38823529411764707, 0.8784313725490196));
+            //Green = #58B66D
+            targetColors.put("Green", new Vector(0.34509803921568627, 0.7137254901960784, 0.42745098039215684));
 
             int relativeLayoutId = hardwareMap.appContext.getResources().getIdentifier("RelativeLayout", "id", hardwareMap.appContext.getPackageName());
             relativeLayout = ((Activity) hardwareMap.appContext).findViewById(relativeLayoutId);
@@ -68,29 +76,34 @@ public class ConceptMultiColorSensor extends LinearOpMode {
                 throw new RuntimeException(e);
             }
 
-            double dist = Double.MAX_VALUE;
+            double dist = THRESHOLD;
             Vector avg = new Vector(0, 0, 0);
             for (NormalizedColorSensor sensor : colorSensors.values()) {
                 NormalizedRGBA rgb = sensor.getNormalizedColors();
                 Vector rgbV = new Vector(rgb.red, rgb.blue, rgb.green);
+                telemetry.addData("RGB", rgbV);
                 avg = Geometry.add(avg, rgbV);
                 for (String target : targetColors.keySet()) {
-                    double d = Math.abs(Geometry.subtract(targetColors.get(target), rgbV).length());
-                    if (d < dist) {
-                        dist = d;
-                        color = target;
+                    if (!target.equals("Black")) {
+                        double d = rationalDistance(targetColors.get(target), rgbV);
+                        if (d < dist ) {
+                            dist = d;
+                            color = target;
+                        }
                     }
                 }
             }
             int n = colorSensors.size();
             avg = new Vector(avg.x() / n, avg.y() / n, avg.z() / n);
-            String avgColor = "";
-            double avgDist = Double.MAX_VALUE;
+            String avgColor = "Black";
+            double avgDist = THRESHOLD;
             for (String target : targetColors.keySet()) {
-                double d = Math.abs(Geometry.subtract(targetColors.get(target), avg).length());
-                if (d < avgDist) {
-                    avgDist = d;
-                    avgColor = target;
+                if (!target.equals("Black")) {
+                    double d = rationalDistance(targetColors.get(target), avg);
+                    if (d < avgDist) {
+                        avgDist = d;
+                        avgColor = target;
+                    }
                 }
             }
 
@@ -104,7 +117,7 @@ public class ConceptMultiColorSensor extends LinearOpMode {
             relativeLayout.post(new Runnable() {
                 public void run() {
                     Vector col = targetColors.get(color);
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                    if (Build.VERSION.SDK_INT >= 26) {
                         relativeLayout.setBackgroundColor(Color.rgb((float) col.x(), (float) col.y(), (float) col.z()));
                     }
                 }
@@ -119,5 +132,10 @@ public class ConceptMultiColorSensor extends LinearOpMode {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    public double rationalDistance(Vector a, Vector b) {
+        Vector ratios = new Vector(a.x() / b.x(), a.y() / b.y(), a.z() / b.z());
+        return Math.abs(Geometry.subtract(new Vector(ratios.x(), ratios.x(), ratios.x()), ratios).length());
     }
 }
