@@ -11,10 +11,8 @@ import com.epra.epralib.ftclib.movement.DriveTrain;
 import com.epra.epralib.ftclib.movement.MotorController;
 import com.epra.epralib.ftclib.movement.PIDController;
 import com.epra.epralib.ftclib.storage.autonomous.AutoStep;
-import com.epra.epralib.ftclib.storage.autonomous.CRServoAutoModule;
 import com.epra.epralib.ftclib.storage.autonomous.MotorControllerAutoModule;
 import com.epra.epralib.ftclib.storage.initialization.PIDGains;
-import com.epra.epralib.ftclib.storage.autonomous.ServoAutoModule;
 import com.google.gson.reflect.TypeToken;
 import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
@@ -167,24 +165,6 @@ public class AutoBlue extends LinearOpMode {
                 }
             }
 
-            //Sets powers and checks times for CRServos
-            if (currentStep.crServoModules() != null) {
-                for (CRServoAutoModule c : currentStep.crServoModules()) {
-                    if (System.currentTimeMillis() - saveTime < c.time()) {
-                        crServos.get(c.id()).setPower(c.power());
-                    } else {
-                        crServos.get(c.id()).setPower(0);
-                    }
-                }
-            }
-
-            //Moves all servos to their target positions
-            if (currentStep.servoModules() != null) {
-                for (ServoAutoModule s : currentStep.servoModules()) {
-                    servos.get(s.id()).setPosition(s.targetPosition());
-                }
-            }
-
             //Checks if enough time has elapsed
             if (System.currentTimeMillis() - saveTime >= currentStep.time()) { weight += currentStep.timeWeight(); }
 
@@ -225,18 +205,6 @@ public class AutoBlue extends LinearOpMode {
                 if (nonDriveMotors.get(mcam.id()).moveToTarget(mcam)) {
                     weight += mcam.weight();
                 }
-            }
-
-            for (CRServoAutoModule c : currentStep.crServoModules()) {
-                if (System.currentTimeMillis() - saveTime < c.time()) {
-                    crServos.get(c.id()).setPower(c.power());
-                } else {
-                    crServos.get(c.id()).setPower(0);
-                }
-            }
-
-            for (ServoAutoModule s : currentStep.servoModules()) {
-                servos.get(s.id()).setPosition(s.targetPosition());
             }
 
             if (System.currentTimeMillis() - saveTime >= currentStep.time()) { weight += currentStep.timeWeight(); }
