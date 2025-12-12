@@ -18,6 +18,7 @@ import com.epra.epralib.ftclib.movement.DriveTrain;
 import com.epra.epralib.ftclib.movement.Motor;
 import com.epra.epralib.ftclib.movement.MotorController;
 import com.epra.epralib.ftclib.movement.PIDController;
+import com.epra.epralib.ftclib.storage.logdata.LogController;
 import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
@@ -44,7 +45,7 @@ public class ConceptMultiColorSensor extends LinearOpMode {
 
     @Override
     public void runOpMode() throws InterruptedException {
-        try {
+        LogController.init();
             //Setting up the controller
             controller1 = new Controller(gamepad1, 0.05f, "1");
             controller2 = new Controller(gamepad2, 0.05f, "1");
@@ -63,18 +64,11 @@ public class ConceptMultiColorSensor extends LinearOpMode {
             int relativeLayoutId = hardwareMap.appContext.getResources().getIdentifier("RelativeLayout", "id", hardwareMap.appContext.getPackageName());
             relativeLayout = ((Activity) hardwareMap.appContext).findViewById(relativeLayoutId);
 
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
+
         waitForStart();
         while (opModeIsActive()) {
             //Logs data controllers
-            try {
-                controller1.log();
-                controller2.log();
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
+            LogController.logData();
 
             double dist = THRESHOLD;
             Vector avg = new Vector(0, 0, 0);
@@ -126,12 +120,7 @@ public class ConceptMultiColorSensor extends LinearOpMode {
             telemetry.update();
         }
         //Closes all logs
-        try {
-            controller1.closeLog();
-            controller2.closeLog();
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
+        LogController.closeLogs();
     }
 
     public double rationalDistance(Vector a, Vector b) {
