@@ -1,0 +1,27 @@
+[
+  {
+    "comment": "Releases the green artifact into the advancer, taking 1s.",
+    "time": 1000,
+    "timeWeight": 0.7,
+    "driveTrainModule": {
+      "targetX": 0,
+      "targetY": 0,
+      "targetAngle": 0,
+      "posTolerance": 1,
+      "angleTolerance": 1,
+      "maxPower": 0,
+      "usePrecision": false,
+      "weight": 0
+    },
+    "motorControllerModules": [
+      {
+        "id": "GreenServo",
+        "target": 1,
+        "tolerance": 0,
+        "maxPower": 1,
+        "power": 0,
+        "weight": 0.7
+      }
+    ]
+  }
+]
