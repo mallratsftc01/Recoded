@@ -15,7 +15,6 @@ repositories {
     }
 }
 
-
 dependencies {
     implementation 'org.firstinspires.ftc:Inspection:11.0.0'
     implementation 'org.firstinspires.ftc:Blocks:11.0.0'
@@ -29,7 +28,7 @@ dependencies {
     implementation('com.acmerobotics.dashboard:dashboard:0.4.16') {
         exclude group: 'org.firstinspires.ftc'
     }
-    implementation ('com.epra.epralib:ftclib:1.5.3') {
+    implementation('com.epra.epralib:ftclib:1.6.5') {
         exclude group: 'org.firstinspires.ftc'
     }
 }

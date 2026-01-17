@@ -1,20 +1,16 @@
 package org.firstinspires.ftc.teamcode;
 
-import android.util.Log;
-
 import com.epra.epralib.ftclib.control.Controller;
 import com.epra.epralib.ftclib.location.MultiIMU;
 import com.epra.epralib.ftclib.location.Odometry;
 import com.epra.epralib.ftclib.location.Pose;
 import com.epra.epralib.ftclib.math.geometry.Angle;
-import com.epra.epralib.ftclib.math.geometry.Geometry;
-import com.epra.epralib.ftclib.math.geometry.Matrix;
 import com.epra.epralib.ftclib.math.geometry.Vector;
-import com.epra.epralib.ftclib.movement.DcMotorExFrame;
-import com.epra.epralib.ftclib.movement.DriveTrain;
 import com.epra.epralib.ftclib.movement.Motor;
+import com.epra.epralib.ftclib.movement.frames.DcMotorExFrame;
+import com.epra.epralib.ftclib.movement.DriveTrain;
 import com.epra.epralib.ftclib.movement.MotorController;
-import com.epra.epralib.ftclib.movement.PIDController;
+import com.epra.epralib.ftclib.movement.pid.PIDController;
 import com.epra.epralib.ftclib.storage.logdata.LogController;
 import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
@@ -47,12 +43,14 @@ public class Recoded extends LinearOpMode {
     private Controller controller2;
 
     @Override
-    public void runOpMode() throws InterruptedException {
+    public void runOpMode(){
+
+        //Initializes the LogController
         LogController.init();
 
         //Setting up the IMU
         RevHubOrientationOnRobot.LogoFacingDirection logoDirection = RevHubOrientationOnRobot.LogoFacingDirection.UP;
-        RevHubOrientationOnRobot.UsbFacingDirection  usbDirection  = RevHubOrientationOnRobot.UsbFacingDirection.RIGHT;
+        RevHubOrientationOnRobot.UsbFacingDirection  usbDirection  = RevHubOrientationOnRobot.UsbFacingDirection.BACKWARD;
         RevHubOrientationOnRobot orientationOnRobot = new RevHubOrientationOnRobot(logoDirection, usbDirection);
 
         IMU tempIMU = hardwareMap.get(IMU.class, "imu 1");
@@ -64,15 +62,21 @@ public class Recoded extends LinearOpMode {
         //Setting up the MotorControllers for the DriveTrain
         frontRight = new MotorController.Builder(new DcMotorExFrame(hardwareMap.get(DcMotorEx.class, "northeastMotor")))
                 .driveOrientation(DriveTrain.Orientation.RIGHT_FRONT)
+                .id("FrontRight")
+                .direction(Motor.Direction.REVERSE)
                 .build();
         backRight = new MotorController.Builder(new DcMotorExFrame(hardwareMap.get(DcMotorEx.class, "southeastMotor")))
                 .driveOrientation(DriveTrain.Orientation.RIGHT_BACK)
+                .id("BackRight")
+                .direction(Motor.Direction.REVERSE)
                 .build();
         frontLeft = new MotorController.Builder(new DcMotorExFrame(hardwareMap.get(DcMotorEx.class, "northwestMotor")))
                 .driveOrientation(DriveTrain.Orientation.LEFT_FRONT)
+                .id("FrontLeft")
                 .build();
         backLeft = new MotorController.Builder(new DcMotorExFrame(hardwareMap.get(DcMotorEx.class, "southwestMotor")))
                 .driveOrientation(DriveTrain.Orientation.LEFT_BACK)
+                .id("BackLeft")
                 .build();
 
         //Setting up the Odometry
@@ -87,34 +91,78 @@ public class Recoded extends LinearOpMode {
 
         //Initializing the DriveTrain
         drive = new DriveTrain.Builder()
-                .motor(frontRight)
-                .motor(frontLeft)
-                .motor(backRight)
-                .motor(frontLeft)
+                .motor(frontRight, DriveTrain.Orientation.RIGHT_FRONT)
+                .motor(frontLeft, DriveTrain.Orientation.LEFT_FRONT)
+                .motor(backRight, DriveTrain.Orientation.RIGHT_BACK)
+                .motor(backLeft, DriveTrain.Orientation.LEFT_BACK)
                 .driveType(DriveTrain.DriveType.MECANUM)
                 .build();
 
         //Setting up the MotorControllers that are not part of the DriveTrain
         nonDriveMotors = new HashMap<>();
         //Add MotorControllers like so:
-        //nonDriveMotors.put("ID", new MotorController(new DcMotorExFrame(hardwareMap.get(DcMotorEx.class, "MOTOR_NAME")), "ID"));
-        nonDriveMotors.put("Shooter", new MotorController(new DcMotorExFrame(hardwareMap.get(DcMotorEx.class, "Shooter")), "Shooter"));
-        nonDriveMotors.put("Intake", new MotorController(new DcMotorExFrame(hardwareMap.get(DcMotorEx.class, "Intake")), "Intake"));
-        nonDriveMotors.put("Advancer", new MotorController(new DcMotorExFrame(hardwareMap.get(DcMotorEx.class, "Advancer")), "Advancer"));
+       /* nonDriveMotors.put("ID",
+       new MotorController.Builder(new DcMotorExFrame(hardwareMap.get(DcMotorEx.class, "motorController1")))
+               .id("ID")
+               .addLogTarget(MotorController.LogTarget.POSITION)
+               .build());*/
+        nonDriveMotors.put("Shooter",
+                new MotorController.Builder(new DcMotorExFrame(hardwareMap.get(DcMotorEx.class, "Shooter")))
+                        .id("Shooter")
+                        .addLogTarget(MotorController.LogTarget.POSITION)
+                        .build());
+        nonDriveMotors.put("Intake",
+                new MotorController.Builder(new DcMotorExFrame(hardwareMap.get(DcMotorEx.class, "Intake")))
+                        .id("Intake")
+                        .addLogTarget(MotorController.LogTarget.POSITION)
+                        .build());
+        nonDriveMotors.put("Advancer",
+                new MotorController.Builder(new DcMotorExFrame(hardwareMap.get(DcMotorEx.class, "Advancer")))
+                        .id("Advancer")
+                        .addLogTarget(MotorController.LogTarget.POSITION)
+                        .build());
+        nonDriveMotors.put("Slider",
+                new MotorController.Builder(new DcMotorExFrame(hardwareMap.get(DcMotorEx.class, "Shooter")))
+                        .id("Slider")
+                        .addLogTarget(MotorController.LogTarget.POSITION)
+                        .build());
 
-        //Setting up the controller
-        controller1 = new Controller(gamepad1, 0.05f, "1");
-        controller2 = new Controller(gamepad2, 0.05f, "1");
-        controller2.createChord("shooterLock", new Controller.Key[]{Controller.Key.LEFT_TRIGGER, Controller.Key.RIGHT_TRIGGER});
+
+
+        controller1 = new Controller(gamepad1, 0.0f, "1",
+                new Controller.Key[] {
+                        Controller.Key.LEFT_STICK_X,
+                        Controller.Key.LEFT_STICK_Y,
+                        Controller.Key.RIGHT_STICK_X,
+                        Controller.Key.RIGHT_STICK_Y
+                });
+
+        controller2 = new Controller(gamepad2, 0.0f, "2",
+                new Controller.Key[] {
+                        Controller.Key.LEFT_STICK_X,
+                        Controller.Key.LEFT_STICK_Y,
+                        Controller.Key.RIGHT_STICK_X,
+                        Controller.Key.RIGHT_STICK_Y
+                });
+
+        LogController.logInfo("Waiting for start...");
 
         waitForStart();
+        LogController.logInfo("Starting TeleOp.");
         while (opModeIsActive()) {
             //Logs data from all MotorControllers, the imu, and odometry
             LogController.logData();
             PIDController.update();
 
             //Uses the joysticks to drive the robot with fieldOrientedMecanumDrive
-            drive.fieldOrientedMecanumDrive(-1 * controller1.analogDeadband(Controller.Key.RIGHT_STICK_X), controller1.analogDeadband(Controller.Stick.LEFT_STICK), imu.getYaw());
+            /*float powLX = controller1.analogDeadband(Controller.Key.LEFT_STICK_X);
+            float powRX = controller1.analogDeadband(Controller.Key.RIGHT_STICK_X);
+            float powLY = controller1.analogDeadband(Controller.Key.LEFT_STICK_Y);
+            frontRight.setPower(powLY - powLX + powRX);
+            frontLeft.setPower(powLY + powLX - powRX);
+            backRight.setPower(powLY + powLX + powRX);
+            backLeft.setPower(powLY - powLX - powRX);*/
+            drive.fieldOrientedMecanumDrive(controller1.analogDeadband(Controller.Key.RIGHT_STICK_X), new Vector(controller1.analogDeadband(Controller.Key.LEFT_STICK_X), -1 * controller1.analogDeadband(Controller.Key.LEFT_STICK_Y)), imu.getYaw());
 
             telemetry.addData("Yaw", imu.getYaw().degree());
             telemetry.addData("NE", frontRight.getPower());
@@ -122,14 +170,14 @@ public class Recoded extends LinearOpMode {
             telemetry.addData("SE", backRight.getPower());
             telemetry.addData("SW", backLeft.getPower());
 
-            if (controller2.buttonToggleSingle("shooterLock")) {
+            if (controller2.getButton(Controller.Key.BUMPER_LEFT) && controller2.getButton(Controller.Key.BUMPER_RIGHT)) {
                 if (shooterLockPower == 0) {
-                    shooterLockPower = -1 * Math.min(0, controller2.analogDeadband(Controller.Key.RIGHT_STICK_Y));
+                    shooterLockPower = Math.min(0, controller2.analogDeadband(Controller.Key.RIGHT_STICK_Y));
                 }
                 nonDriveMotors.get("Shooter").setPower(shooterLockPower);
             }
             else {
-                nonDriveMotors.get("Shooter").setPower(-1 * Math.min(0, controller2.analogDeadband(Controller.Key.RIGHT_STICK_Y)));
+                nonDriveMotors.get("Shooter").setPower(Math.min(0, controller2.analogDeadband(Controller.Key.RIGHT_STICK_Y)));
                 shooterLockPower = 0;
             }
 
@@ -141,13 +189,26 @@ public class Recoded extends LinearOpMode {
                 nonDriveMotors.get("Advancer").setPower(0);
             }
 
-            telemetry.addData("Shooter", (controller2.buttonToggleSingle("shooterLock")) ? "Locked" : "Unlocked");
+            if (controller2.getButton(Controller.Key.LEFT)) {
+                nonDriveMotors.get("Slider").setPower(1);
+            } else {
+                nonDriveMotors.get("Slider").setPower(0);
+            }
+
+            if (controller2.getButton(Controller.Key.RIGHT)) {
+                nonDriveMotors.get("Slider").setPower(-1);
+            } else {
+                nonDriveMotors.get("Slider").setPower(0);
+            }
+
+            //telemetry.addData("Shooter", controller2.getButton(Controller.Key.BUMPER_LEFT) && controller2.getButton(Controller.Key.BUMPER_RIGHT)) ? "Locked" : "Unlocked");
             telemetry.addData("Shooter Power", nonDriveMotors.get("Shooter").getPower());
             telemetry.addData("Shooter RPM", nonDriveMotors.get("Shooter").getRPS() * 60);
 
             telemetry.update();
         }
         //Closes all logs
+        LogController.logInfo("TeleOp complete.");
         LogController.closeLogs();
     }
 }
