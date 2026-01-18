@@ -116,18 +116,16 @@ public class Recoded extends LinearOpMode {
                         .id("Intake")
                         .addLogTarget(MotorController.LogTarget.POSITION)
                         .build());
-        nonDriveMotors.put("Advancer",
-                new MotorController.Builder(new DcMotorExFrame(hardwareMap.get(DcMotorEx.class, "Advancer")))
-                        .id("Advancer")
-                        .addLogTarget(MotorController.LogTarget.POSITION)
-                        .build());
         nonDriveMotors.put("Slider",
-                new MotorController.Builder(new DcMotorExFrame(hardwareMap.get(DcMotorEx.class, "Shooter")))
+                new MotorController.Builder(new DcMotorExFrame(hardwareMap.get(DcMotorEx.class, "Slider")))
                         .id("Slider")
                         .addLogTarget(MotorController.LogTarget.POSITION)
                         .build());
-
-
+        nonDriveMotors.put("Gate",
+                new MotorController.Builder(new DcMotorExFrame(hardwareMap.get(DcMotorEx.class, "Gate")))
+                        .id("Gate")
+                        .addLogTarget(MotorController.LogTarget.POSITION)
+                        .build());
 
         controller1 = new Controller(gamepad1, 0.0f, "1",
                 new Controller.Key[] {
@@ -183,22 +181,22 @@ public class Recoded extends LinearOpMode {
 
             nonDriveMotors.get("Intake").setPower(controller2.analogDeadband(Controller.Key.LEFT_STICK_Y));
 
-            if (controller2.getButton(Controller.Key.UP) && (controller2.analogDeadband(Controller.Key.RIGHT_STICK_Y) != 0.0 || controller2.buttonToggleSingle("shooterLock"))) {
-                nonDriveMotors.get("Advancer").setPower(-1);
-            } else{
-                nonDriveMotors.get("Advancer").setPower(0);
-            }
-
-            if (controller2.getButton(Controller.Key.LEFT)) {
-                nonDriveMotors.get("Slider").setPower(1);
+            if (controller2.getButton(Controller.Key.DOWN)) {
+                nonDriveMotors.get("Slider").setPower(-.3);
             } else {
                 nonDriveMotors.get("Slider").setPower(0);
             }
 
-            if (controller2.getButton(Controller.Key.RIGHT)) {
-                nonDriveMotors.get("Slider").setPower(-1);
+            if (controller2.getButton(Controller.Key.X)) {
+                nonDriveMotors.get("Gate").setPower(1);
             } else {
-                nonDriveMotors.get("Slider").setPower(0);
+                nonDriveMotors.get("Gate").setPower(0);
+            }
+
+            if (controller2.getButton(Controller.Key.B)) {
+                nonDriveMotors.get("Gate").setPower(-1);
+            } else {
+                nonDriveMotors.get("Gate").setPower(0);
             }
 
             //telemetry.addData("Shooter", controller2.getButton(Controller.Key.BUMPER_LEFT) && controller2.getButton(Controller.Key.BUMPER_RIGHT)) ? "Locked" : "Unlocked");
