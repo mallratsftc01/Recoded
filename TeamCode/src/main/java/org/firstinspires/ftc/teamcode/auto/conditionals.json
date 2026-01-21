@@ -1,0 +1,11 @@
+{
+  "GPP": "[AprilTag.Id] == 21",
+  "PGP": "[AprilTag.Id] == 22",
+  "PPG": "[AprilTag.Id] == 23",
+  "Delay": "[Time.Seconds] >= [Time.Delay]",
+  "ShooterAtVelocity": "[Shooter.Velocity] >= [Shooter.TargetVelocity]",
+  "IntakeDone": "[Time.Step.Seconds] >= [Intake.Time]",
+  "SliderDone": "[Time.Step.Seconds] >= [Slider.Time]",
+  "GateDone": "[Time.Step.Seconds] >= [Gate.Time]",
+  "ShooterDone": "[Time.Step.Seconds] >= [Shooter.Time]"
+}

@@ -7,16 +7,20 @@ import com.epra.epralib.ftclib.location.Pose;
 import com.epra.epralib.ftclib.math.geometry.Angle;
 import com.epra.epralib.ftclib.math.geometry.Vector;
 import com.epra.epralib.ftclib.movement.Motor;
+import com.epra.epralib.ftclib.movement.frames.CRServoFrame;
 import com.epra.epralib.ftclib.movement.frames.DcMotorExFrame;
 import com.epra.epralib.ftclib.movement.DriveTrain;
 import com.epra.epralib.ftclib.movement.MotorController;
+import com.epra.epralib.ftclib.movement.frames.ServoFrame;
 import com.epra.epralib.ftclib.movement.pid.PIDController;
 import com.epra.epralib.ftclib.storage.logdata.LogController;
 import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.IMU;
+import com.qualcomm.robotcore.hardware.Servo;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -122,7 +126,7 @@ public class Recoded extends LinearOpMode {
                         .addLogTarget(MotorController.LogTarget.POSITION)
                         .build());
         nonDriveMotors.put("Gate",
-                new MotorController.Builder(new DcMotorExFrame(hardwareMap.get(DcMotorEx.class, "Gate")))
+                new MotorController.Builder(new CRServoFrame(hardwareMap.get(CRServo.class, "Gate")))
                         .id("Gate")
                         .addLogTarget(MotorController.LogTarget.POSITION)
                         .build());

@@ -1,0 +1,270 @@
+[
+  {
+    "comment": "Gets the shooter up to the target speed",
+    "endCondition": "ShooterAtVelocity",
+    "driveTrainModule": {
+      "targetX": 0,
+      "targetY": 0,
+      "targetAngle": 0,
+      "posTolerance": 100,
+      "angleTolerance": 1,
+      "maxPower": 0,
+      "usePrecision": false
+    },
+    "motorControllerModules":
+    [
+      {
+        "id": "Shooter",
+        "target": 0,
+        "tolerance": -1,
+        "maxPower": 1,
+        "power": 1
+      }
+    ]
+  },
+  {
+    "comment": "Moves the first purple ball out of the tower into the slider",
+    "endCondition": "GateDone",
+    "driveTrainModule": {
+      "targetX": 0,
+      "targetY": 0,
+      "targetAngle": 0,
+      "posTolerance": 100,
+      "angleTolerance": 1,
+      "maxPower": 0,
+      "usePrecision": false
+    },
+    "motorControllerModules":
+    [
+      {
+        "id": "Shooter",
+        "target": 0,
+        "tolerance": -1,
+        "maxPower": 1,
+        "power": 1
+      },
+      {
+        "id": "Gate",
+        "target": 0,
+        "tolerance": -1,
+        "maxPower": 1,
+        "power": 1
+      }
+    ]
+  },
+  {
+    "comment": "Uses the slider to move the first purple ball into the shooter",
+    "endCondition": "SliderDone",
+    "driveTrainModule": {
+      "targetX": 0,
+      "targetY": 0,
+      "targetAngle": 0,
+      "posTolerance": 100,
+      "angleTolerance": 1,
+      "maxPower": 0,
+      "usePrecision": false
+    },
+    "motorControllerModules":
+    [
+      {
+        "id": "Shooter",
+        "target": 0,
+        "tolerance": -1,
+        "maxPower": 1,
+        "power": 1
+      },
+      {
+        "id": "Gate",
+        "target": 0,
+        "tolerance": -1,
+        "maxPower": 0,
+        "power": 0
+      },
+      {
+        "id": "Slider",
+        "target": 0,
+        "tolerance": -1,
+        "maxPower": 1,
+        "power": 1
+      }
+    ]
+  },
+  {
+    "comment": "Moves the green ball out of the intake and into the slider",
+    "endCondition": "IntakeDone",
+    "driveTrainModule": {
+      "targetX": 0,
+      "targetY": 0,
+      "targetAngle": 0,
+      "posTolerance": 100,
+      "angleTolerance": 1,
+      "maxPower": 0,
+      "usePrecision": false
+    },
+    "motorControllerModules":
+    [
+      {
+        "id": "Shooter",
+        "target": 0,
+        "tolerance": -1,
+        "maxPower": 1,
+        "power": 1
+      },
+      {
+        "id": "Intake",
+        "target": 0,
+        "tolerance": -1,
+        "maxPower": 1,
+        "power": 1
+      },
+      {
+        "id": "Slider",
+        "target": 0,
+        "tolerance": -1,
+        "maxPower": 1,
+        "power": 1
+      }
+    ]
+  },
+  {
+    "comment": "Uses the slider to move the green ball into the shooter",
+    "endCondition": "SliderDone",
+    "driveTrainModule": {
+      "targetX": 0,
+      "targetY": 0,
+      "targetAngle": 0,
+      "posTolerance": 100,
+      "angleTolerance": 1,
+      "maxPower": 0,
+      "usePrecision": false
+    },
+    "motorControllerModules":
+    [
+      {
+        "id": "Shooter",
+        "target": 0,
+        "tolerance": -1,
+        "maxPower": 1,
+        "power": 1
+      },
+      {
+        "id": "Intake",
+        "target": 0,
+        "tolerance": -1,
+        "maxPower": 0,
+        "power": 0
+      },
+      {
+        "id": "Slider",
+        "target": 0,
+        "tolerance": -1,
+        "maxPower": 1,
+        "power": 1
+      }
+    ]
+  },
+  {
+    "comment": "Moves the second purple ball out of the tower into the slider",
+    "endCondition": "GateDone",
+    "driveTrainModule": {
+      "targetX": 0,
+      "targetY": 0,
+      "targetAngle": 0,
+      "posTolerance": 100,
+      "angleTolerance": 1,
+      "maxPower": 0,
+      "usePrecision": false
+    },
+    "motorControllerModules":
+    [
+      {
+        "id": "Shooter",
+        "target": 0,
+        "tolerance": -1,
+        "maxPower": 1,
+        "power": 1
+      },
+      {
+        "id": "Gate",
+        "target": 0,
+        "tolerance": -1,
+        "maxPower": 1,
+        "power": 1
+      },
+      {
+        "id": "Slider",
+        "target": 0,
+        "tolerance": -1,
+        "maxPower": 0,
+        "power": 0
+      }
+    ]
+  },
+  {
+    "comment": "Uses the slider to move the second second ball into the shooter",
+    "endCondition": "SliderDone",
+    "driveTrainModule": {
+      "targetX": 0,
+      "targetY": 0,
+      "targetAngle": 0,
+      "posTolerance": 100,
+      "angleTolerance": 1,
+      "maxPower": 0,
+      "usePrecision": false
+    },
+    "motorControllerModules":
+    [
+      {
+        "id": "Shooter",
+        "target": 0,
+        "tolerance": -1,
+        "maxPower": 1,
+        "power": 1
+      },
+      {
+        "id": "Gate",
+        "target": 0,
+        "tolerance": -1,
+        "maxPower": 0,
+        "power": 0
+      },
+      {
+        "id": "Slider",
+        "target": 0,
+        "tolerance": -1,
+        "maxPower": 1,
+        "power": 1
+      }
+    ]
+  },
+  {
+    "comment": "Turns off the shooter and slider",
+    "endCondition": "ShooterDone",
+    "driveTrainModule": {
+      "targetX": 0,
+      "targetY": 0,
+      "targetAngle": 0,
+      "posTolerance": 100,
+      "angleTolerance": 1,
+      "maxPower": 0,
+      "usePrecision": false
+    },
+    "motorControllerModules":
+    [
+      {
+        "id": "Shooter",
+        "target": 0,
+        "tolerance": -1,
+        "maxPower": 0,
+        "power": 0
+      },
+      {
+        "id": "Slider",
+        "target": 0,
+        "tolerance": -1,
+        "maxPower": 0,
+        "power": 0
+      }
+    ]
+  }
+]

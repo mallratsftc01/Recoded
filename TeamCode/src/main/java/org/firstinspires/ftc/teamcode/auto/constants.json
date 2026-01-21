@@ -1,0 +1,8 @@
+{
+  "Time.Delay": 0,
+  "Shooter.TargetVelocity": 1000,
+  "Intake.Time": 1,
+  "Slider.Time": 1,
+  "Gate.Time": 1,
+  "Shooter.Time": 0.25
+}

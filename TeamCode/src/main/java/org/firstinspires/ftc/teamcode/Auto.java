@@ -5,9 +5,12 @@ import com.epra.epralib.ftclib.location.Odometry;
 import com.epra.epralib.ftclib.location.Pose;
 import com.epra.epralib.ftclib.math.geometry.Angle;
 import com.epra.epralib.ftclib.math.geometry.Vector;
+import com.epra.epralib.ftclib.movement.Motor;
+import com.epra.epralib.ftclib.movement.frames.CRServoFrame;
 import com.epra.epralib.ftclib.movement.frames.DcMotorExFrame;
 import com.epra.epralib.ftclib.movement.DriveTrain;
 import com.epra.epralib.ftclib.movement.MotorController;
+import com.epra.epralib.ftclib.movement.frames.ServoFrame;
 import com.epra.epralib.ftclib.movement.pid.PIDController;
 import com.epra.epralib.ftclib.storage.autonomous.AutoProgram;
 import com.epra.epralib.ftclib.storage.autonomous.AutoStep;
@@ -22,10 +25,9 @@ import com.qualcomm.robotcore.hardware.IMU;
 import com.qualcomm.robotcore.hardware.Servo;
 
 import java.util.HashMap;
-import java.util.function.Supplier;
 
-@Autonomous
-public class AutoBlue extends LinearOpMode {
+@Autonomous(name = "Auto", group = "Autonomous")
+public class Auto extends LinearOpMode {
 
     //These variables lead to the JSON files that control the vast majority of auto
     private final String AUTO_DIRECTORY = "auto";
@@ -41,8 +43,6 @@ public class AutoBlue extends LinearOpMode {
     private DriveTrain drive;
 
     private HashMap<String, MotorController> nonDriveMotors;
-    private HashMap<String, CRServo> crServos;
-    private HashMap<String, Servo> servos;
 
     private MultiIMU imu;
 
@@ -69,9 +69,11 @@ public class AutoBlue extends LinearOpMode {
         //Setting up the MotorControllers for the DriveTrain
         frontRight = new MotorController.Builder(new DcMotorExFrame(hardwareMap.get(DcMotorEx.class, "northeastMotor")))
                 .driveOrientation(DriveTrain.Orientation.RIGHT_FRONT)
+                .direction(Motor.Direction.REVERSE)
                 .build();
         backRight = new MotorController.Builder(new DcMotorExFrame(hardwareMap.get(DcMotorEx.class, "southeastMotor")))
                 .driveOrientation(DriveTrain.Orientation.RIGHT_BACK)
+                .direction(Motor.Direction.REVERSE)
                 .build();
         frontLeft = new MotorController.Builder(new DcMotorExFrame(hardwareMap.get(DcMotorEx.class, "northwestMotor")))
                 .driveOrientation(DriveTrain.Orientation.LEFT_FRONT)
@@ -96,44 +98,68 @@ public class AutoBlue extends LinearOpMode {
                 .motor(frontRight)
                 .motor(frontLeft)
                 .motor(backRight)
-                .motor(frontLeft)
+                .motor(backLeft)
                 .driveType(DriveTrain.DriveType.MECANUM)
                 .build();
 
         //Setting up the MotorControllers that are not part of the DriveTrain
         nonDriveMotors = new HashMap<>();
-        //Add MotorControllers like so:
-        /* nonDriveMotors.put("ID",
-        new MotorController.Builder(new DcMotorExFrame(hardwareMap.get(DcMotorEx.class, "motorController1")))
-                .id("ID")
-                .addLogTarget(MotorController.LogTarget.POSITION)
-                .build());*/
-
+        nonDriveMotors.put("Shooter",
+                new MotorController.Builder(new DcMotorExFrame(hardwareMap.get(DcMotorEx.class, "Shooter")))
+                        .id("Shooter")
+                        .addLogTarget(MotorController.LogTarget.POSITION)
+                        .build());
+        nonDriveMotors.put("Intake",
+                new MotorController.Builder(new DcMotorExFrame(hardwareMap.get(DcMotorEx.class, "Intake")))
+                        .id("Intake")
+                        .addLogTarget(MotorController.LogTarget.POSITION)
+                        .build());
+        nonDriveMotors.put("Slider",
+                new MotorController.Builder(new DcMotorExFrame(hardwareMap.get(DcMotorEx.class, "Slider")))
+                        .id("Slider")
+                        .addLogTarget(MotorController.LogTarget.POSITION)
+                        .build());
+        nonDriveMotors.put("Gate",
+                new MotorController.Builder(new CRServoFrame(hardwareMap.get(CRServo.class, "Gate")))
+                        .id("Gate")
+                        .addLogTarget(MotorController.LogTarget.POSITION)
+                        .build());
         PIDController.getPIDsFromFile(PID_SETTINGS_FILENAME);
 
-        // Setting up the AutoProgram
-        HashMap<String, Supplier<Double>> dataSuppliers = new HashMap<>();
-        dataSuppliers.put("Time.Seconds", () -> (double)System.currentTimeMillis() / 1000.0);
-        dataSuppliers.put("Position.X", () -> odometry.getPose().pos.x());
-        dataSuppliers.put("Position.Y", () -> odometry.getPose().pos.y());
-        dataSuppliers.put("Position.Theta", () -> imu.getYaw().degree());
-        dataSuppliers.put("Velocity.X", () -> odometry.getVelocity().x());
-        dataSuppliers.put("Velocity.Y", () -> odometry.getVelocity().y());
-        dataSuppliers.put("Acceleration.X", () -> odometry.getAcceleration().x());
-        dataSuppliers.put("Acceleration.Y", () -> odometry.getAcceleration().y());
-        for (String key : nonDriveMotors.keySet()) {
-            MotorController motor = nonDriveMotors.get(key);
-            dataSuppliers.put(key + ".Position", () -> motor.getCurrentPosition());
-            dataSuppliers.put(key + ".Velocity", () -> motor.getVelocity());
-        }
 
-        program = new AutoProgram(AUTO_DIRECTORY, dataSuppliers);
+        // Setting up the AutoProgram
+        final var autoData = new Object() {
+            long startTime = System.currentTimeMillis();
+            long stepStartTime = startTime;
+            long movementStartTime = startTime;
+
+            final double TARGET_SHOOTER_VELOCITY = 1000;
+        };
+
+        AutoProgram.Builder autoBuilder = new AutoProgram.Builder(AUTO_DIRECTORY)
+                .programName("AutoExample")
+                .dataSupplier("Time.Seconds", () -> (double)(System.currentTimeMillis() - autoData.startTime) / 1000.0)
+                .dataSupplier("Time.Step.Seconds", () -> (double)(System.currentTimeMillis() - autoData.stepStartTime) / 1000.0)
+                .dataSupplier("Time.Movement.Seconds", () -> (double)(System.currentTimeMillis() - autoData.movementStartTime) / 1000.0)
+
+                .dataSupplier("Position.X", () -> odometry.getPose().pos.x())
+                .dataSupplier("Position.Y", () -> odometry.getPose().pos.y())
+                .dataSupplier("Position.Theta", () -> imu.getYaw().degree())
+                .dataSupplier("Velocity.X", () -> odometry.getVelocity().x())
+                .dataSupplier("Velocity.Y", () -> odometry.getVelocity().y())
+                .dataSupplier("Acceleration.X", () -> odometry.getAcceleration().x())
+                .dataSupplier("Acceleration.Y", () -> odometry.getAcceleration().y())
+
+                .dataSupplier("Shooter.Velocity", () -> Math.abs(nonDriveMotors.get("Shooter").getRPM()));
+
+        program = autoBuilder.build();
 
         LogController.logInfo("Waiting for start...");
         waitForStart();
         LogController.logInfo("Starting Autonomous.");
-        long startTime = System.currentTimeMillis();
-        long saveTime = startTime;
+        autoData.startTime = System.currentTimeMillis();
+        autoData.stepStartTime = autoData.startTime;
+        autoData.movementStartTime = autoData.startTime;
         while (program.autoActive()) {
             //Logs
             LogController.logData();
@@ -142,8 +168,16 @@ public class AutoBlue extends LinearOpMode {
             PIDController.update();
 
             //Updates the auto program
+            AutoStep lastStep = program.getCurrentStep();
+            String lastMovement = program.getCurrentMovement();
             program.updateStep();
             AutoStep currentStep = program.getCurrentStep();
+            if (!lastStep.equals(currentStep)) {
+                autoData.stepStartTime = System.currentTimeMillis();
+            }
+            if (!lastMovement.equals(program.getCurrentMovement())) {
+                autoData.movementStartTime = System.currentTimeMillis();
+            }
 
             double weight = 0.0;
 
