@@ -1,0 +1,16 @@
+[
+  {
+    "comment": "Moving to the parking position from the back starting position",
+    "endCondition": "TRUE",
+    "driveTrainModule": {
+      "targetX": 0,
+      "targetY": 0,
+      "targetAngle": 0,
+      "posTolerance": 0.5,
+      "angleTolerance": 0.1,
+      "maxPower": 0,
+      "usePrecision": true
+    },
+    "motorControllerModules": []
+  }
+]

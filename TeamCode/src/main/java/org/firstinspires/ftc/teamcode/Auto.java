@@ -1,5 +1,8 @@
 package org.firstinspires.ftc.teamcode;
 
+import android.util.Log;
+
+import com.epra.epralib.ftclib.control.Controller;
 import com.epra.epralib.ftclib.location.MultiIMU;
 import com.epra.epralib.ftclib.location.Odometry;
 import com.epra.epralib.ftclib.location.Pose;
@@ -65,6 +68,7 @@ public class Auto extends LinearOpMode {
         imu = new MultiIMU.Builder(tempIMU)
                 .loggingTarget(MultiIMU.Axis.YAW)
                 .build();
+        LogController.addLogger(imu);
 
         //Setting up the MotorControllers for the DriveTrain
         frontRight = new MotorController.Builder(new DcMotorExFrame(hardwareMap.get(DcMotorEx.class, "northeastMotor")))
@@ -92,6 +96,7 @@ public class Auto extends LinearOpMode {
                 .startPose(new Pose(new Vector(0, 0), Angle.degree(0)))
                 .loggingTargets(Odometry.LoggingTarget.X, Odometry.LoggingTarget.Y)
                 .build();
+        LogController.addLogger(odometry);
 
         //Initializing the DriveTrain
         drive = new DriveTrain.Builder()
@@ -107,22 +112,27 @@ public class Auto extends LinearOpMode {
         nonDriveMotors.put("Shooter",
                 new MotorController.Builder(new DcMotorExFrame(hardwareMap.get(DcMotorEx.class, "Shooter")))
                         .id("Shooter")
-                        .addLogTarget(MotorController.LogTarget.POSITION)
+                        .addLogTarget(MotorController.LogTarget.VELOCITY)
+                        .ticksPerRevolution(28)
                         .build());
+        LogController.addLogger(nonDriveMotors.get("Shooter"));
         nonDriveMotors.put("Intake",
                 new MotorController.Builder(new DcMotorExFrame(hardwareMap.get(DcMotorEx.class, "Intake")))
                         .id("Intake")
-                        .addLogTarget(MotorController.LogTarget.POSITION)
+                        .addLogTarget(MotorController.LogTarget.VELOCITY)
+                        .ticksPerRevolution(288)
                         .build());
+        LogController.addLogger(nonDriveMotors.get("Intake"));
         nonDriveMotors.put("Slider",
                 new MotorController.Builder(new DcMotorExFrame(hardwareMap.get(DcMotorEx.class, "Slider")))
                         .id("Slider")
-                        .addLogTarget(MotorController.LogTarget.POSITION)
+                        .addLogTarget(MotorController.LogTarget.VELOCITY)
+                        .ticksPerRevolution(288)
                         .build());
+        LogController.addLogger(nonDriveMotors.get("Slider"));
         nonDriveMotors.put("Gate",
                 new MotorController.Builder(new CRServoFrame(hardwareMap.get(CRServo.class, "Gate")))
                         .id("Gate")
-                        .addLogTarget(MotorController.LogTarget.POSITION)
                         .build());
         PIDController.getPIDsFromFile(PID_SETTINGS_FILENAME);
 

@@ -1,0 +1,16 @@
+[
+  {
+    "comment": "Passes to next movement",
+    "endCondition": "TRUE",
+    "driveTrainModule": {
+      "targetX": 0,
+      "targetY": 0,
+      "targetAngle": 0,
+      "posTolerance": 100,
+      "angleTolerance": 1,
+      "maxPower": 0,
+      "usePrecision": false
+    },
+    "motorControllerModules": []
+  }
+]

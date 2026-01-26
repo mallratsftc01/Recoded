@@ -1,0 +1,21 @@
+{
+  "init.json": {
+    "StartAtFront": "move/front_to_shoot.json",
+    "Shoot": "move/back_to_shoot.json",
+    "TRUE": "move/back_to_park"
+  },
+  "move/front_to_shoot.json": {
+    "GPP": "shoot/gpp.json",
+    "PGP": "shoot/pgp.json",
+    "PPG": "shoot/ppg.json",
+    "TRUE": "move/shoot_to_park.json"
+  },
+  "move/back_to_shoot.json": {
+    "GPP": "shoot/gpp.json",
+    "PGP": "shoot/pgp.json",
+    "PPG": "shoot/ppg.json",
+    "TRUE": "move/shoot_to_park.json"
+  },
+  "move/shoot_to_park.json": {},
+  "move/back_to_park.json": {}
+}

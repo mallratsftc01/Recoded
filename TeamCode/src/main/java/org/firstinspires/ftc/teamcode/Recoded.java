@@ -62,6 +62,7 @@ public class Recoded extends LinearOpMode {
         imu = new MultiIMU.Builder(tempIMU)
                 .loggingTarget(MultiIMU.Axis.YAW)
                 .build();
+        LogController.addLogger(imu);
 
         //Setting up the MotorControllers for the DriveTrain
         frontRight = new MotorController.Builder(new DcMotorExFrame(hardwareMap.get(DcMotorEx.class, "northeastMotor")))
@@ -92,6 +93,7 @@ public class Recoded extends LinearOpMode {
                 .startPose(new Pose(new Vector(0, 0), Angle.degree(0)))
                 .loggingTargets(Odometry.LoggingTarget.X, Odometry.LoggingTarget.Y)
                 .build();
+        LogController.addLogger(odometry);
 
         //Initializing the DriveTrain
         drive = new DriveTrain.Builder()
@@ -113,22 +115,27 @@ public class Recoded extends LinearOpMode {
         nonDriveMotors.put("Shooter",
                 new MotorController.Builder(new DcMotorExFrame(hardwareMap.get(DcMotorEx.class, "Shooter")))
                         .id("Shooter")
-                        .addLogTarget(MotorController.LogTarget.POSITION)
+                        .addLogTarget(MotorController.LogTarget.VELOCITY)
+                        .ticksPerRevolution(28)
                         .build());
+        LogController.addLogger(nonDriveMotors.get("Shooter"));
         nonDriveMotors.put("Intake",
                 new MotorController.Builder(new DcMotorExFrame(hardwareMap.get(DcMotorEx.class, "Intake")))
                         .id("Intake")
-                        .addLogTarget(MotorController.LogTarget.POSITION)
+                        .addLogTarget(MotorController.LogTarget.VELOCITY)
+                        .ticksPerRevolution(288)
                         .build());
+        LogController.addLogger(nonDriveMotors.get("Intake"));
         nonDriveMotors.put("Slider",
                 new MotorController.Builder(new DcMotorExFrame(hardwareMap.get(DcMotorEx.class, "Slider")))
                         .id("Slider")
-                        .addLogTarget(MotorController.LogTarget.POSITION)
+                        .addLogTarget(MotorController.LogTarget.VELOCITY)
+                        .ticksPerRevolution(288)
                         .build());
+        LogController.addLogger(nonDriveMotors.get("Slider"));
         nonDriveMotors.put("Gate",
                 new MotorController.Builder(new CRServoFrame(hardwareMap.get(CRServo.class, "Gate")))
                         .id("Gate")
-                        .addLogTarget(MotorController.LogTarget.POSITION)
                         .build());
 
         controller1 = new Controller(gamepad1, 0.0f, "1",
@@ -183,21 +190,12 @@ public class Recoded extends LinearOpMode {
                 shooterLockPower = 0;
             }
 
-            nonDriveMotors.get("Intake").setPower(controller2.analogDeadband(Controller.Key.LEFT_STICK_Y));
-
-            if (controller2.getButton(Controller.Key.DOWN)) {
-                nonDriveMotors.get("Slider").setPower(-.3);
-            } else {
-                nonDriveMotors.get("Slider").setPower(0);
-            }
+            nonDriveMotors.get("Intake").setPower(controller2.getButton(Controller.Key.UP) ? 0.5 : controller2.getButton(Controller.Key.DOWN) ? -0.5 : 0.0);
+            nonDriveMotors.get("Slider").setPower(controller2.getButton(Controller.Key.RIGHT) ? 0.5 : controller2.getButton(Controller.Key.LEFT) ? -0.5 : 0.0);
 
             if (controller2.getButton(Controller.Key.X)) {
                 nonDriveMotors.get("Gate").setPower(1);
-            } else {
-                nonDriveMotors.get("Gate").setPower(0);
-            }
-
-            if (controller2.getButton(Controller.Key.B)) {
+            } else if (controller2.getButton(Controller.Key.B)) {
                 nonDriveMotors.get("Gate").setPower(-1);
             } else {
                 nonDriveMotors.get("Gate").setPower(0);
@@ -205,7 +203,7 @@ public class Recoded extends LinearOpMode {
 
             //telemetry.addData("Shooter", controller2.getButton(Controller.Key.BUMPER_LEFT) && controller2.getButton(Controller.Key.BUMPER_RIGHT)) ? "Locked" : "Unlocked");
             telemetry.addData("Shooter Power", nonDriveMotors.get("Shooter").getPower());
-            telemetry.addData("Shooter RPM", nonDriveMotors.get("Shooter").getRPS() * 60);
+            telemetry.addData("Shooter RPM", nonDriveMotors.get("Shooter").getRPM());
 
             telemetry.update();
         }

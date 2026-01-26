@@ -1,8 +1,11 @@
 {
   "Time.Delay": 0,
-  "Shooter.TargetVelocity": 1000,
+  "Shooter.TargetVelocity": 2000,
   "Intake.Time": 1,
   "Slider.Time": 1,
   "Gate.Time": 1,
-  "Shooter.Time": 0.25
+  "Shooter.Time": 0.25,
+
+  "Start.Front": 1,
+  "Shoot": 1
 }
