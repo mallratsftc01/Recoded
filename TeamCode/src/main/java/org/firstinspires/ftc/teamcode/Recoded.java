@@ -127,17 +127,28 @@ public class Recoded extends LinearOpMode {
                         .ticksPerRevolution(288)
                         .build());
         LogController.addLogger(nonDriveMotors.get("Intake"));
-        nonDriveMotors.put("Slider",
+
+        //Currently unused Slider code
+        /*nonDriveMotors.put("Slider",
                 new MotorController.Builder(new DcMotorExFrame(hardwareMap.get(DcMotorEx.class, "Slider")))
                         .id("Slider")
                         .addLogTarget(MotorController.LogTarget.VELOCITY)
                         .ticksPerRevolution(288)
+                        .build()); */
+
+        nonDriveMotors.put("Advancer",
+                new MotorController.Builder(new DcMotorExFrame(hardwareMap.get(DcMotorEx.class, "Advancer")))
+                        .id("Advancer")
+                        .addLogTarget(MotorController.LogTarget.VELOCITY)
+                        .ticksPerRevolution(288)
                         .build());
-        LogController.addLogger(nonDriveMotors.get("Slider"));
+
+        //Currently unused gate code
+        /*LogController.addLogger(nonDriveMotors.get("Slider"));
         nonDriveMotors.put("Gate",
                 new MotorController.Builder(new CRServoFrame(hardwareMap.get(CRServo.class, "Gate")))
                         .id("Gate")
-                        .build());
+                        .build()); */
 
         controller1 = new Controller(gamepad1, 0.0f, "1",
                 new Controller.Key[] {
@@ -193,15 +204,17 @@ public class Recoded extends LinearOpMode {
 
             nonDriveMotors.get("Intake").setPower(-1 * controller2.getAnalog(Controller.Key.LEFT_STICK_Y));
 
-            nonDriveMotors.get("Slider").setPower(controller2.getButton(Controller.Key.X) ? 0.5 : controller2.getButton(Controller.Key.B) ? -0.5 : 0.0);
+            //nonDriveMotors.get("Slider").setPower(controller2.getButton(Controller.Key.X) ? 0.5 : controller2.getButton(Controller.Key.B) ? -0.5 : 0.0);
 
-            if (controller2.getButton(Controller.Key.UP)) {
+            nonDriveMotors.get("Advancer").setPower(controller2.getButton(Controller.Key.A) ? 0.5 : controller2.getButton(Controller.Key.Y) ? -0.5 : 0.0);
+
+            /*if (controller2.getButton(Controller.Key.UP)) {
                 nonDriveMotors.get("Gate").setPower(1);
             } else if (controller2.getButton(Controller.Key.DOWN)) {
                 nonDriveMotors.get("Gate").setPower(-1);
             } else {
                 nonDriveMotors.get("Gate").setPower(0);
-            }
+            } */
 
             //telemetry.addData("Shooter", controller2.getButton(Controller.Key.BUMPER_LEFT) && controller2.getButton(Controller.Key.BUMPER_RIGHT)) ? "Locked" : "Unlocked");
             telemetry.addData("Shooter Power", nonDriveMotors.get("Shooter").getPower());
