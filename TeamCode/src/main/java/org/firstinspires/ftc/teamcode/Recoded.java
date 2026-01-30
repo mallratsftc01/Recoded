@@ -59,6 +59,7 @@ public class Recoded extends LinearOpMode {
 
         IMU tempIMU = hardwareMap.get(IMU.class, "imu 1");
         tempIMU.initialize(new IMU.Parameters(orientationOnRobot));
+        tempIMU.resetYaw();
         imu = new MultiIMU.Builder(tempIMU)
                 .loggingTarget(MultiIMU.Axis.YAW)
                 .build();
@@ -153,6 +154,7 @@ public class Recoded extends LinearOpMode {
                         Controller.Key.RIGHT_STICK_X,
                         Controller.Key.RIGHT_STICK_Y
                 });
+        controller2.createChord("ShooterLock", Controller.Key.LEFT_TRIGGER, Controller.Key.RIGHT_TRIGGER);
 
         LogController.logInfo("Waiting for start...");
 
@@ -179,23 +181,23 @@ public class Recoded extends LinearOpMode {
             telemetry.addData("SE", backRight.getPower());
             telemetry.addData("SW", backLeft.getPower());
 
-            if (controller2.getButton(Controller.Key.BUMPER_LEFT) && controller2.getButton(Controller.Key.BUMPER_RIGHT)) {
-                if (shooterLockPower == 0) {
-                    shooterLockPower = Math.min(0, controller2.analogDeadband(Controller.Key.RIGHT_STICK_Y));
-                }
+            if (controller2.buttonSingle("ShooterLock")) {
+                controller2.flipToggle("ShooterLock");
+                shooterLockPower = Math.min(0, controller2.analogDeadband(Controller.Key.RIGHT_STICK_Y));
+            }
+            if (controller2.getToggle("ShooterLock")) {
                 nonDriveMotors.get("Shooter").setPower(shooterLockPower);
-            }
-            else {
+            } else {
                 nonDriveMotors.get("Shooter").setPower(Math.min(0, controller2.analogDeadband(Controller.Key.RIGHT_STICK_Y)));
-                shooterLockPower = 0;
             }
 
-            nonDriveMotors.get("Intake").setPower(controller2.getButton(Controller.Key.UP) ? 0.5 : controller2.getButton(Controller.Key.DOWN) ? -0.5 : 0.0);
-            nonDriveMotors.get("Slider").setPower(controller2.getButton(Controller.Key.RIGHT) ? 0.5 : controller2.getButton(Controller.Key.LEFT) ? -0.5 : 0.0);
+            nonDriveMotors.get("Intake").setPower(-1 * controller2.getAnalog(Controller.Key.LEFT_STICK_Y));
 
-            if (controller2.getButton(Controller.Key.X)) {
+            nonDriveMotors.get("Slider").setPower(controller2.getButton(Controller.Key.X) ? 0.5 : controller2.getButton(Controller.Key.B) ? -0.5 : 0.0);
+
+            if (controller2.getButton(Controller.Key.UP)) {
                 nonDriveMotors.get("Gate").setPower(1);
-            } else if (controller2.getButton(Controller.Key.B)) {
+            } else if (controller2.getButton(Controller.Key.DOWN)) {
                 nonDriveMotors.get("Gate").setPower(-1);
             } else {
                 nonDriveMotors.get("Gate").setPower(0);
@@ -204,6 +206,7 @@ public class Recoded extends LinearOpMode {
             //telemetry.addData("Shooter", controller2.getButton(Controller.Key.BUMPER_LEFT) && controller2.getButton(Controller.Key.BUMPER_RIGHT)) ? "Locked" : "Unlocked");
             telemetry.addData("Shooter Power", nonDriveMotors.get("Shooter").getPower());
             telemetry.addData("Shooter RPM", nonDriveMotors.get("Shooter").getRPM());
+            telemetry.addData("Shooter Lock", shooterLockPower);
 
             telemetry.update();
         }
