@@ -1,0 +1,30 @@
+[
+  {
+    "comment": "Moves backwards for an amount of time",
+    "endCondition": "MoveBackwardsDone",
+    "driveTrainModule": {
+      "driveMode": "direct_drive",
+      "maxPower": 0.8,
+      "x": 0.0,
+      "y": -1.0,
+      "angle": 0,
+      "posTolerance": 0,
+      "angleTolerance": 1
+    },
+    "motorControllerModules": []
+  },
+  {
+    "comment": "Halts",
+    "endCondition": "TRUE",
+    "driveTrainModule": {
+      "driveMode": "direct_drive",
+      "maxPower": 0,
+      "x": 0,
+      "y": 0,
+      "angle": 0,
+      "posTolerance": 0,
+      "angleTolerance": 1
+    },
+    "motorControllerModules": []
+  }
+]

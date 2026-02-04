@@ -7,6 +7,7 @@ import com.epra.epralib.ftclib.location.MultiIMU;
 import com.epra.epralib.ftclib.location.Odometry;
 import com.epra.epralib.ftclib.location.Pose;
 import com.epra.epralib.ftclib.math.geometry.Angle;
+import com.epra.epralib.ftclib.math.geometry.Geometry;
 import com.epra.epralib.ftclib.math.geometry.Vector;
 import com.epra.epralib.ftclib.movement.Motor;
 import com.epra.epralib.ftclib.movement.frames.CRServoFrame;
@@ -34,6 +35,7 @@ public class Auto extends LinearOpMode {
 
     //These variables lead to the JSON files that control the vast majority of auto
     private final String AUTO_DIRECTORY = "auto";
+    private final String PROGRAM_NAME = "no_odometry_program";
     private final String PID_SETTINGS_FILENAME = "pid.json";
     private final String ENCODER_SETTINGS_FILENAME = "encoder.json";
     //The starting position must also be set
@@ -59,8 +61,8 @@ public class Auto extends LinearOpMode {
         LogController.init();
 
         //Setting up the IMU
-        RevHubOrientationOnRobot.LogoFacingDirection logoDirection = RevHubOrientationOnRobot.LogoFacingDirection.UP;
-        RevHubOrientationOnRobot.UsbFacingDirection  usbDirection  = RevHubOrientationOnRobot.UsbFacingDirection.BACKWARD;
+        RevHubOrientationOnRobot.LogoFacingDirection logoDirection = RevHubOrientationOnRobot.LogoFacingDirection.DOWN;
+        RevHubOrientationOnRobot.UsbFacingDirection  usbDirection  = RevHubOrientationOnRobot.UsbFacingDirection.RIGHT;
         RevHubOrientationOnRobot orientationOnRobot = new RevHubOrientationOnRobot(logoDirection, usbDirection);
 
         IMU tempIMU = hardwareMap.get(IMU.class, "imu 1");
@@ -123,16 +125,11 @@ public class Auto extends LinearOpMode {
                         .ticksPerRevolution(288)
                         .build());
         LogController.addLogger(nonDriveMotors.get("Intake"));
-        nonDriveMotors.put("Slider",
-                new MotorController.Builder(new DcMotorExFrame(hardwareMap.get(DcMotorEx.class, "Slider")))
-                        .id("Slider")
+        nonDriveMotors.put("Advancer",
+                new MotorController.Builder(new DcMotorExFrame(hardwareMap.get(DcMotorEx.class, "Advancer")))
+                        .id("Advancer")
                         .addLogTarget(MotorController.LogTarget.VELOCITY)
                         .ticksPerRevolution(288)
-                        .build());
-        LogController.addLogger(nonDriveMotors.get("Slider"));
-        nonDriveMotors.put("Gate",
-                new MotorController.Builder(new CRServoFrame(hardwareMap.get(CRServo.class, "Gate")))
-                        .id("Gate")
                         .build());
         PIDController.getPIDsFromFile(PID_SETTINGS_FILENAME);
 
@@ -142,12 +139,10 @@ public class Auto extends LinearOpMode {
             long startTime = System.currentTimeMillis();
             long stepStartTime = startTime;
             long movementStartTime = startTime;
-
-            final double TARGET_SHOOTER_VELOCITY = 1000;
         };
 
         AutoProgram.Builder autoBuilder = new AutoProgram.Builder(AUTO_DIRECTORY)
-                .programName("AutoExample")
+                .programName(PROGRAM_NAME)
                 .dataSupplier("Time.Seconds", () -> (double)(System.currentTimeMillis() - autoData.startTime) / 1000.0)
                 .dataSupplier("Time.Step.Seconds", () -> (double)(System.currentTimeMillis() - autoData.stepStartTime) / 1000.0)
                 .dataSupplier("Time.Movement.Seconds", () -> (double)(System.currentTimeMillis() - autoData.movementStartTime) / 1000.0)
@@ -170,7 +165,7 @@ public class Auto extends LinearOpMode {
         autoData.startTime = System.currentTimeMillis();
         autoData.stepStartTime = autoData.startTime;
         autoData.movementStartTime = autoData.startTime;
-        while (program.autoActive()) {
+        while (opModeIsActive()) {
             //Logs
             LogController.logData();
 
@@ -178,6 +173,7 @@ public class Auto extends LinearOpMode {
             PIDController.update();
 
             //Updates the auto program
+            if (!program.autoActive()) { break; }
             AutoStep lastStep = program.getCurrentStep();
             String lastMovement = program.getCurrentMovement();
             program.updateStep();
@@ -189,21 +185,26 @@ public class Auto extends LinearOpMode {
                 autoData.movementStartTime = System.currentTimeMillis();
             }
 
-            double weight = 0.0;
-
             //Updates the DriveTrain with new instructions
-            drive.posPIDMecanumDrive(currentStep.driveTrainModule());
+            //drive.useDriveTrainAutoModule(currentStep.driveTrainModule());
+            drive.mecanumDrive(0,
+                    Geometry.scale(new Vector(currentStep.driveTrainModule().x(),
+                                    currentStep.driveTrainModule().y()).unit(),
+                            currentStep.driveTrainModule().maxPower()));
+            //drive.mecanumDrive(0, new Vector(currentStep.driveTrainModule().x(), currentStep.driveTrainModule().y()).unit());
 
             //Updates all the MotorControllers with new instructions
             if (currentStep.motorControllerModules() != null) {
                 for (MotorControllerAutoModule m : currentStep.motorControllerModules()) {
-                    if (m.tolerance() == -1.0) {
-                        nonDriveMotors.get(m.id()).setPower(m.power());
-                    } else {
-                        nonDriveMotors.get(m.id()).moveToTarget(m);
-                    }
+                    nonDriveMotors.get(m.id()).useMotorControllerAutoModule(m);
                 }
             }
+
+            telemetry.addData("Current Movement:", program.getCurrentMovement());
+            telemetry.addData("Step Information:", program.getCurrentStep().comment());
+            telemetry.addData("Drivetrain X:", drive.driveTrainVector().x());
+            telemetry.addData("Drivetrain Y:", drive.driveTrainVector().y());
+            telemetry.update();
         }
     }
 }

@@ -53,8 +53,8 @@ public class Recoded extends LinearOpMode {
         LogController.init();
 
         //Setting up the IMU
-        RevHubOrientationOnRobot.LogoFacingDirection logoDirection = RevHubOrientationOnRobot.LogoFacingDirection.UP;
-        RevHubOrientationOnRobot.UsbFacingDirection  usbDirection  = RevHubOrientationOnRobot.UsbFacingDirection.BACKWARD;
+        RevHubOrientationOnRobot.LogoFacingDirection logoDirection = RevHubOrientationOnRobot.LogoFacingDirection.DOWN;
+        RevHubOrientationOnRobot.UsbFacingDirection  usbDirection  = RevHubOrientationOnRobot.UsbFacingDirection.RIGHT;
         RevHubOrientationOnRobot orientationOnRobot = new RevHubOrientationOnRobot(logoDirection, usbDirection);
 
         IMU tempIMU = hardwareMap.get(IMU.class, "imu 1");
@@ -184,7 +184,7 @@ public class Recoded extends LinearOpMode {
             frontLeft.setPower(powLY + powLX - powRX);
             backRight.setPower(powLY + powLX + powRX);
             backLeft.setPower(powLY - powLX - powRX);*/
-            drive.fieldOrientedMecanumDrive(controller1.analogDeadband(Controller.Key.RIGHT_STICK_X), new Vector(controller1.analogDeadband(Controller.Key.LEFT_STICK_X), -1 * controller1.analogDeadband(Controller.Key.LEFT_STICK_Y)), imu.getYaw());
+            drive.fieldOrientedMecanumDrive(controller1.analogDeadband(Controller.Key.RIGHT_STICK_X), new Vector(-controller1.analogDeadband(Controller.Key.LEFT_STICK_X), -1 * controller1.analogDeadband(Controller.Key.LEFT_STICK_Y)), imu.getYaw());
 
             telemetry.addData("Yaw", imu.getYaw().degree());
             telemetry.addData("NE", frontRight.getPower());
@@ -199,14 +199,20 @@ public class Recoded extends LinearOpMode {
             if (controller2.getToggle("ShooterLock")) {
                 nonDriveMotors.get("Shooter").setPower(shooterLockPower);
             } else {
-                nonDriveMotors.get("Shooter").setPower(Math.min(0, controller2.analogDeadband(Controller.Key.RIGHT_STICK_Y)));
+                nonDriveMotors.get("Shooter").setPower(controller2.analogDeadband(Controller.Key.RIGHT_STICK_Y));
             }
 
-            nonDriveMotors.get("Intake").setPower(-1 * controller2.getAnalog(Controller.Key.LEFT_STICK_Y));
+            if (controller2.getButton(Controller.Key.UP)) {
+                nonDriveMotors.get("Intake").setPower(0.7);
+                nonDriveMotors.get("Advancer").setPower(-0.7);
+            } else {
 
-            //nonDriveMotors.get("Slider").setPower(controller2.getButton(Controller.Key.X) ? 0.5 : controller2.getButton(Controller.Key.B) ? -0.5 : 0.0);
+                nonDriveMotors.get("Intake").setPower(-1 * controller2.getAnalog(Controller.Key.LEFT_STICK_Y));
 
-            nonDriveMotors.get("Advancer").setPower(controller2.getButton(Controller.Key.A) ? 0.5 : controller2.getButton(Controller.Key.Y) ? -0.5 : 0.0);
+                //nonDriveMotors.get("Slider").setPower(controller2.getButton(Controller.Key.X) ? 0.5 : controller2.getButton(Controller.Key.B) ? -0.5 : 0.0);
+
+                nonDriveMotors.get("Advancer").setPower(controller2.getButton(Controller.Key.Y) ? 0.5 : controller2.getButton(Controller.Key.A) ? -0.5 : 0.0);
+            }
 
             /*if (controller2.getButton(Controller.Key.UP)) {
                 nonDriveMotors.get("Gate").setPower(1);

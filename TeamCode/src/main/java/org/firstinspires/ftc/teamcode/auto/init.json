@@ -3,13 +3,13 @@
     "comment": "Passes to next movement",
     "endCondition": "TRUE",
     "driveTrainModule": {
-      "targetX": 0,
-      "targetY": 0,
-      "targetAngle": 0,
-      "posTolerance": 100,
-      "angleTolerance": 1,
+      "driveMode": "direct_drive",
       "maxPower": 0,
-      "usePrecision": false
+      "x": 0,
+      "y": 0,
+      "angle": 0,
+      "posTolerance": 0,
+      "angleTolerance": 1
     },
     "motorControllerModules": []
   }

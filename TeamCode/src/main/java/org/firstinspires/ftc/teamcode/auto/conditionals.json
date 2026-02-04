@@ -8,6 +8,7 @@
   "SliderDone": "[Time.Step.Seconds] >= [Slider.Time]",
   "GateDone": "[Time.Step.Seconds] >= [Gate.Time]",
   "ShooterDone": "[Time.Step.Seconds] >= [Shooter.Time]",
+  "MoveBackwardsDone": "[Time.Step.Seconds] >= [Move.Backwards.Time]",
 
   "StartAtFront": "[Start.Front] == 1",
   "Shoot": "[Shoot] == 1"

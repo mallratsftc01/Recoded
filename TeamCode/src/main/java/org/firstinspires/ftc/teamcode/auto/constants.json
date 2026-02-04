@@ -6,6 +6,8 @@
   "Gate.Time": 1,
   "Shooter.Time": 0.25,
 
+  "Move.Backwards.Time": 1,
+
   "Start.Front": 1,
   "Shoot": 1
 }
