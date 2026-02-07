@@ -1,11 +1,11 @@
 {
   "leftX": -8.125,
   "leftY": 3.75,
-  "leftUnitsPerTick": 0.002968,
+  "leftUnitsPerTick": 0.003,
   "rightX": 8,
   "rightY": 3.75,
-  "rightUnitsPerTick": 0.002968,
+  "rightUnitsPerTick": 0.003,
   "perpendicularX": 0.75,
   "perpendicularY": -0.5,
-  "perpendicularUnitsPerTick": 0.002968
+  "perpendicularUnitsPerTick": 0.003
 }

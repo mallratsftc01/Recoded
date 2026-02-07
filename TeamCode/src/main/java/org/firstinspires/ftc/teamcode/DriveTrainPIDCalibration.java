@@ -101,7 +101,7 @@ public class DriveTrainPIDCalibration extends LinearOpMode {
                 .rightEncoder(frontRight::getCurrentPosition, 0.01, new Vector(-8, 4))
                 .perpendicularEncoder(backLeft::getCurrentPosition, 0.01, new Vector(0, 2))
                 .useEncoderSettingsFile(ENCODER_SETTINGS_FILENAME)
-                //.heading(imu::getYaw)
+                .heading(imu::getYaw)
                 .startPose(START_POSE)
                 .loggingTargets(Odometry.LoggingTarget.X, Odometry.LoggingTarget.Y)
                 .build();
@@ -114,9 +114,14 @@ public class DriveTrainPIDCalibration extends LinearOpMode {
                 .motor(backRight)
                 .motor(backLeft)
                 .driveType(DriveTrain.DriveType.MECANUM)
+                .poseSupplier(odometry::getPose)
+                .deltaPoseSupplier(odometry::getDeltaPose)
                 .build();
 
-        PIDController.getPIDsFromFile(PID_SETTINGS_FILENAME);
+        /*HashMap<String, PIDCoefficients> pidMap = PIDController.getPIDsFromFile(PID_SETTINGS_FILENAME);
+        PIDController.addPID("DriveTrain_P", pidMap.get("DriveTrain_P"), drive::getPointError);
+        PIDController.addPID("DriveTrain_A", pidMap.get("DriveTrain_A"), drive::getAngleError);
+        PIDController.addPID("DriveTrain_M", pidMap.get("DriveTrain_M"), drive::getMotionError);*/
 
         controller1 = new Controller(gamepad1, 0.05f, "Controller1");
 
@@ -178,9 +183,9 @@ public class DriveTrainPIDCalibration extends LinearOpMode {
             telemetryPacket.put("Time.Movement", (double)(System.currentTimeMillis() - ref.movementStartTime) / 1000.0);
             telemetryPacket.addLine(" ");
             telemetryPacket.put("Position", odometry.getPose());
-            telemetryPacket.put("Position.X", odometry.getPose().pos.x());
-            telemetryPacket.put("Position.Y", odometry.getPose().pos.y());
-            telemetryPacket.put("Position.θ", imu.getYaw().degree());
+            telemetryPacket.put("Position Error", drive.getPointError());
+            telemetryPacket.put("Position Error Magnitude", drive.getPointError().length());
+            telemetryPacket.put("Target", currentStep.driveTrainModule().targetPose());
             telemetryPacket.put("Left Encoder", frontLeft.getCurrentPosition());
             telemetryPacket.put("Right Encoder", frontRight.getCurrentPosition());
             telemetryPacket.put("Perpendicular Encoder", backLeft.getCurrentPosition());
